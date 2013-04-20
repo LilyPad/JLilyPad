@@ -72,7 +72,7 @@ public class ConnectNetworkHandler extends ChannelInboundMessageHandlerAdapter<P
 	
 	public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
 		Channel channel = context.channel();
-		cause.printStackTrace();
+		//cause.printStackTrace(); ignore
 		if(channel.isOpen()) {
 			channel.close();
 		}
