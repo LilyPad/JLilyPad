@@ -17,7 +17,7 @@
   
   <repositories>
     <repository>
-      <id>netty</id>
+      <id>lilypad</id>
       <url>http://ci.lilypadmc.com/plugin/repository/everything</url>
     </repository>
   </repositories>
