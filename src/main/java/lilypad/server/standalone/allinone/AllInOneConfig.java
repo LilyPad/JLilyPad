@@ -47,7 +47,7 @@ public class AllInOneConfig extends Config implements FileConfig {
 		}
 		
 		public class Outbound {
-			public String address = "";
+			public String address = "0.0.0.0";
 		}
 	}
 	
