@@ -15,15 +15,6 @@
     <build.number>Unknown</build.number>
   </properties>
   
-  <dependencies>
-  	<dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>2.2.2</version>
-      <scope>compile</scope>
-    </dependency>
-  </dependencies>
-  
   <build>
     <finalName>${project.name}</finalName>
     <plugins>
