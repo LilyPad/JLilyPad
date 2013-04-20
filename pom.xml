@@ -1,0 +1,81 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <groupId>lilypad.server.standalone</groupId>
+  <artifactId>query</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>Server-Standalone-Query</name>
+  <url>http://lilypadmc.com</url>
+  
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <build.number>Unknown</build.number>
+  </properties>
+  
+  <repositories>
+    <repository>
+      <id>lilypad</id>
+      <url>http://ci.lilypadmc.com/plugin/repository/everything</url>
+    </repository>
+  </repositories>
+  
+  <dependencies>
+    <dependency>
+      <groupId>lilypad.server</groupId>
+      <artifactId>query</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>lilypad.client.connect</groupId>
+      <artifactId>lib</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+  
+  <build>
+    <finalName>${project.name}</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.5.1</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2</version>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+            	<source>1.6</source>
+          		<target>1.6</target>
+            	<descriptorRefs>
+            		<descriptorRef>jar-with-dependencies</descriptorRef>
+          		</descriptorRefs>
+            	<appendAssemblyId>false</appendAssemblyId>
+            	<archive>
+            		<addMavenDescriptor>false</addMavenDescriptor>
+            		<manifestEntries>
+              			<Main-Class>lilypad.server.standalone.query.Query</Main-Class>
+              			<Implementation-Title>${name}</Implementation-Title>
+              			<Implementation-Version>${build.number}</Implementation-Version>
+            		</manifestEntries>
+          		</archive>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
