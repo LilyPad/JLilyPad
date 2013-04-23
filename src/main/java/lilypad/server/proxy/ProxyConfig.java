@@ -40,4 +40,6 @@ public interface ProxyConfig extends IConfig {
 	
 	public String proxy_getLocaleLostConn();
 	
+	public String proxy_getLocaleShutdown();
+	
 }

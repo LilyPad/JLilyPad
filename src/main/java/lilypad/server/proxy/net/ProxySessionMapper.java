@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ProxySessionMapper {
 
 	private Map<String, ProxySession> authenticatedByUsername = new ConcurrentHashMap<String, ProxySession>();
-
+	
 	public void markAuthenticated(ProxySession proxySession) {
 		this.authenticatedByUsername.put(proxySession.getUsername(), proxySession);
 	}
@@ -28,11 +28,17 @@ public class ProxySessionMapper {
 	public int getAuthenticatedSize() {
 		return this.authenticatedByUsername.size();
 	}
+	
+	public void kickAuthenticated(String message) {
+		for(ProxySession proxySession : this.authenticatedByUsername.values()) {
+			proxySession.kick(message);
+		}
+	}
 
 	public void remove(ProxySession proxySession) {
 		this.authenticatedByUsername.remove(proxySession.getUsername());
 	}
-
+	
 	public void clear() {
 		this.authenticatedByUsername.clear();
 	}

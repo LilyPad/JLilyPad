@@ -247,7 +247,7 @@ public class ProxySession {
 		this.inboundChannel.write(packet);
 	}
 
-	public void redirect(final IServer server) {
+	public void redirect(final IServer server) { 
 		Bootstrap bootstrap = new Bootstrap().group(this.inboundChannel.eventLoop())
 				.channel(NioSocketChannel.class)
 				.localAddress(this.config.proxy_getOutboundAddress())
@@ -276,14 +276,13 @@ public class ProxySession {
 			return;
 		}
 		this.inboundChannel.write(new KickPacket(message)).addListener(new ChannelFutureListener() {
-			public void operationComplete(ChannelFuture arg0) throws Exception {
+			public void operationComplete(ChannelFuture future) throws Exception {
 				if(inboundChannel == null || !inboundChannel.isOpen()) {
 					return;
 				}
 				inboundChannel.close();
 			}
 		});
-
 	}
 
 	public void kickIfDirecting(String message) {
