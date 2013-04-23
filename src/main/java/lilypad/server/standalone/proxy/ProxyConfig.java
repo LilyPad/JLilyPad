@@ -42,6 +42,7 @@ public class ProxyConfig extends Config implements FileConfig {
 		public String localeOffline = "The requested server is currently offline. Try again later!";
 		public String localeLoggedIn = "You seem to be logged in already. Try again later!";
 		public String localeLostConn = "Lost connection... Please try to reconnect";
+		public String localeShutdown = "The server is being restarted. Please try to reconnect";
 		
 		public Proxy() {
 			this.bind.port = 25565;
@@ -121,6 +122,10 @@ public class ProxyConfig extends Config implements FileConfig {
 	public String proxy_getLocaleLostConn() {
 		return this.proxy.localeLostConn;
 	}
+	
+	public String proxy_getLocaleShutdown() {
+		return this.proxy.localeShutdown;
+	}
 
 	public InetSocketAddress getOutboundAddress() {
 		if(this.connectAddress == null) {
@@ -136,5 +141,5 @@ public class ProxyConfig extends Config implements FileConfig {
 	public String getPassword() {
 		return this.connect.credentials.password;
 	}
-	
+
 }
