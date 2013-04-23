@@ -61,6 +61,10 @@
             	<appendAssemblyId>false</appendAssemblyId>
             	<archive>
             		<addMavenDescriptor>false</addMavenDescriptor>
+            		<manifestEntries>
+              			<Implementation-Title>${name}</Implementation-Title>
+              			<Implementation-Version>${build.number}</Implementation-Version>
+            		</manifestEntries>
           		</archive>
             </configuration>
           </execution>
