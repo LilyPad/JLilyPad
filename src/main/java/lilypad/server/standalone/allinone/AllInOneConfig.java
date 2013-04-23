@@ -36,6 +36,7 @@ public class AllInOneConfig extends Config implements FileConfig {
 		public String localeOffline = "The requested server is currently offline. Try again later!";
 		public String localeLoggedIn = "You have logged in from another location";
 		public String localeLostConn = "Lost connection... Please try to reconnect";
+		public String localeShutdown = "The server is being restarted. Please try to reconnect";
 		
 		public Proxy() {
 			this.bind.port = 25565;
@@ -176,6 +177,10 @@ public class AllInOneConfig extends Config implements FileConfig {
 
 	public String proxy_getLocaleLostConn() {
 		return this.proxy.localeLostConn;
+	}
+
+	public String proxy_getLocaleShutdown() {
+		return this.proxy.localeShutdown;
 	}
 	
 }
