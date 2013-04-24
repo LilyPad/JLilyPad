@@ -115,7 +115,7 @@ public class GenericPacketCodec extends PacketCodec<GenericPacket> {
 				break;
 			case TEAM_DATA:
 				a = buffer.getUnsignedByte(position);
-				position += 2;
+				position += 1;
 				if(a == 0 || a == 2) {
 					b = buffer.getUnsignedShort(position);
 					position += (b * 2) + 2;
