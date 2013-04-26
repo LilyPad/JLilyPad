@@ -22,9 +22,6 @@ public class GenericPacketCodec extends PacketCodec<GenericPacket> {
 		int c;
 		int d;
 		for(OpPair opPair : opPairs) {
-			if(position - start > CraftPacketConstants.maxPacketSize) {
-				throw new Exception("Max packet size passed, dropping");
-			}
 			switch(opPair.getOperation()) {
 			case JUMP_FIXED:
 				position += opPair.getParameter();
@@ -174,9 +171,9 @@ public class GenericPacketCodec extends PacketCodec<GenericPacket> {
 				}
 				break;
 			}
-		}
-		if(position - start > CraftPacketConstants.maxPacketSize) {
-			throw new Exception("Max packet size passed, dropping");
+			if(position - start > CraftPacketConstants.maxPacketSize) {
+				throw new Exception("Max packet size passed, dropping");
+			}
 		}
 		return buffer.readBytes(position - start);
 	}
