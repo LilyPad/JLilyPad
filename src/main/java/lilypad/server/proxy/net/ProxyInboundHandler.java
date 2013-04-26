@@ -1,5 +1,6 @@
 package lilypad.server.proxy.net;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -20,6 +21,7 @@ import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundMessageHandlerAdapter;
+import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.util.AttributeKey;
 
 @Sharable
@@ -138,7 +140,13 @@ public class ProxyInboundHandler extends ChannelInboundMessageHandlerAdapter<Pac
 
 	public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
 		Channel channel = context.channel();
-		//cause.printStackTrace(); ignore
+		if(cause instanceof IOException) {
+			if(!cause.getMessage().equals("Connection reset by peer")) {
+				cause.printStackTrace();
+			}
+		} else if (!(cause instanceof ReadTimeoutException)) {
+			cause.printStackTrace();
+		}
 		if(channel.isOpen()) {
 			channel.close();
 		}
