@@ -9,6 +9,9 @@ import java.net.URLEncoder;
 public class MinecraftUtils {
 
 	public static boolean authenticate(String username, String serverKey) {
+		if(username == null || serverKey == null) {
+			return false;
+		}
 		BufferedReader bufferedReader = null;
 		try {
 			URLConnection urlConnection = new URL("http://session.minecraft.net/game/checkserver.jsp?user=" + URLEncoder.encode(username, "UTF-8") + "&serverId=" + URLEncoder.encode(serverKey, "UTF-8")).openConnection();
