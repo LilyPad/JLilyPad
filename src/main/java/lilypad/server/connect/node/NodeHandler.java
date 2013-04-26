@@ -1,5 +1,7 @@
 package lilypad.server.connect.node;
 
+import java.io.IOException;
+
 import lilypad.packet.common.Packet;
 import lilypad.packet.connect.impl.KeepalivePacket;
 import lilypad.packet.connect.impl.RequestPacket;
@@ -10,6 +12,7 @@ import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundMessageHandlerAdapter;
+import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.util.AttributeKey;
 
 @Sharable
@@ -52,7 +55,13 @@ public class NodeHandler extends ChannelInboundMessageHandlerAdapter<Packet> {
 	
 	public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
 		Channel channel = context.channel();
-		//cause.printStackTrace(); ignore
+		if(cause instanceof IOException) {
+			if(!cause.getMessage().equals("Connection reset by peer")) {
+				cause.printStackTrace();
+			}
+		} else if (!(cause instanceof ReadTimeoutException)) {
+			cause.printStackTrace();
+		}
 		if(channel.isOpen()) {
 			channel.close();
 		}
