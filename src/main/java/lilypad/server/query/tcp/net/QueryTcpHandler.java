@@ -1,5 +1,6 @@
 package lilypad.server.query.tcp.net;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
 
@@ -9,6 +10,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundMessageHandlerAdapter;
+import io.netty.handler.timeout.ReadTimeoutException;
 import lilypad.server.common.IPlayable;
 
 @Sharable
@@ -54,7 +56,13 @@ public class QueryTcpHandler extends ChannelInboundMessageHandlerAdapter<String>
 	
     public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
 		Channel channel = context.channel();
-		//cause.printStackTrace(); ignore
+		if(cause instanceof IOException) {
+			if(!cause.getMessage().equals("Connection reset by peer")) {
+				cause.printStackTrace();
+			}
+		} else if (!(cause instanceof ReadTimeoutException)) {
+			cause.printStackTrace();
+		}
 		if(channel.isOpen()) {
 			channel.close();
 		}

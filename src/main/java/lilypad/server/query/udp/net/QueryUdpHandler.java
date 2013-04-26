@@ -1,5 +1,6 @@
 package lilypad.server.query.udp.net;
 
+import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,6 +13,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundMessageHandlerAdapter;
 import io.netty.channel.socket.DatagramPacket;
+import io.netty.handler.timeout.ReadTimeoutException;
 
 public class QueryUdpHandler extends ChannelInboundMessageHandlerAdapter<DatagramPacket> {
 
@@ -127,7 +129,13 @@ public class QueryUdpHandler extends ChannelInboundMessageHandlerAdapter<Datagra
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
-		//cause.printStackTrace(); ignore
+		if(cause instanceof IOException) {
+			if(!cause.getMessage().equals("Connection reset by peer")) {
+				cause.printStackTrace();
+			}
+		} else if (!(cause instanceof ReadTimeoutException)) {
+			cause.printStackTrace();
+		}
 	}
 
 }
