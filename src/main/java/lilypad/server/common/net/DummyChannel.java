@@ -103,7 +103,7 @@ public class DummyChannel implements Channel {
 	}
 
 	public ChannelFuture write(Object object, ChannelPromise channelPromise) {
-		return this.channel.write(object, this.writePromise);
+		return this.channel.write(object, channelPromise);
 	}
 
 	public ByteBufAllocator alloc() {
