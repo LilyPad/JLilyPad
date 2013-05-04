@@ -185,5 +185,15 @@ public class DummyChannel implements Channel {
 	public Unsafe unsafe() {
 		return this.channel.unsafe();
 	}
+	
+	@Override
+	public String toString() {
+		return this.channel.toString();
+	}
+	
+	@Override
+	public int hashCode() {
+		return this.channel.id();
+	}
 
 }
