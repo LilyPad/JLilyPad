@@ -21,6 +21,7 @@ import lilypad.server.proxy.packet.impl.TeamPacket;
 import lilypad.server.proxy.util.MinecraftUtils;
 import lilypad.server.common.IPlayerCallback;
 import lilypad.server.common.IServer;
+import lilypad.server.common.net.DummyChannel;
 import lilypad.server.common.util.SecurityUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -59,7 +60,7 @@ public class ProxySession {
 	public ProxySession(ProxyConfig config, ProxySessionMapper sessionMapper, Channel channel) {
 		this.config = config;
 		this.sessionMapper = sessionMapper;
-		this.inboundChannel = channel;
+		this.inboundChannel = new DummyChannel(channel);
 	}
 
 	public void inboundAuthenticate() {
@@ -312,7 +313,7 @@ public class ProxySession {
 		Channel oldOutboundChannel = this.outboundChannel;
 		this.state = ProxySessionState.CONNECTED;
 		this.server = server;
-		this.outboundChannel = channel;
+		this.outboundChannel = new DummyChannel(channel);
 		if(oldOutboundChannel != null && oldOutboundChannel.isOpen()) {
 			oldOutboundChannel.close();
 		}
