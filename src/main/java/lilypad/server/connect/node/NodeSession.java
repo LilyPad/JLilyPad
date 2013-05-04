@@ -15,6 +15,7 @@ import lilypad.server.connect.query.NodeQueryLookupService;
 import lilypad.server.common.IAuthenticator;
 import lilypad.server.common.IPlayable;
 import lilypad.server.common.IServer;
+import lilypad.server.common.net.DummyChannel;
 import lilypad.server.common.util.SecurityUtils;
 import io.netty.channel.Channel;
 
@@ -40,7 +41,7 @@ public class NodeSession implements IServer {
 	private int maximumPlayers;
 
 	public NodeSession(Channel channel, ConnectService connectService, IAuthenticator authenticator, IPlayable playable) {
-		this.channel = channel;
+		this.channel = new DummyChannel(channel);
 		this.connectService = connectService;
 		this.authenticator = authenticator;
 		this.playable = playable;
