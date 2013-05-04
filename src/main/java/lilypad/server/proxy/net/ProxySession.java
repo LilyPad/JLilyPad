@@ -29,7 +29,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.DefaultChannelPromise;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
@@ -277,7 +276,7 @@ public class ProxySession {
 		if(!this.isInboundConnected()) {
 			return;
 		}
-		this.inboundChannel.write(new KickPacket(message), new DefaultChannelPromise(this.inboundChannel)).addListener(new ChannelFutureListener() {
+		this.inboundChannel.write(new KickPacket(message), this.inboundChannel.newPromise()).addListener(new ChannelFutureListener() {
 			public void operationComplete(ChannelFuture future) throws Exception {
 				if(inboundChannel == null || !inboundChannel.isOpen()) {
 					return;
