@@ -1,7 +1,5 @@
 package lilypad.server.common.net;
 
-import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.Channel;
@@ -10,15 +8,6 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
 public class DummyPromise implements ChannelPromise {
-
-	private static Map<Channel, DummyPromise> promises = new WeakHashMap<Channel, DummyPromise>();
-	
-	public static DummyPromise getPromise(Channel channel) {
-		if(!promises.containsKey(channel)) {
-			promises.put(channel, new DummyPromise(channel));
-		}
-		return promises.get(channel);
-	}
 	
 	private Channel channel;
 	
