@@ -68,7 +68,7 @@ public class ProxyOutboundHandler extends ChannelInboundMessageHandlerAdapter<Pa
 					return;
 				}
 				this.state = ProxyOutboundHandlerState.BUFFERING;
-				this.proxySession.setRedirecting(false);
+				this.proxySession.setRedirecting(true);
 				channel.write(new StatusPacket(0));
 			} else {
 				this.proxySession.kickIfDirecting("Error: Protocol Mismatch (0x05)");
@@ -79,7 +79,7 @@ public class ProxyOutboundHandler extends ChannelInboundMessageHandlerAdapter<Pa
 			if(packet.getOpcode() == 0x0D) {
 				this.state = ProxyOutboundHandlerState.CONNECTED;
 				this.proxySession.setOutboundChannel(this.server, channel);
-				this.proxySession.setRedirecting(true);
+				this.proxySession.setRedirecting(false);
 			}
 		case CONNECTED:
 			this.proxySession.outboundReceived(channel, packet);
