@@ -49,7 +49,7 @@ public class ProxySession {
 	private byte[] sharedSecret;
 
 	private IServer server;
-	private boolean readable;
+	private boolean redirecting;
 
 	private int clientEntityId;
 	private int serverEntityId;
@@ -154,7 +154,7 @@ public class ProxySession {
 			this.serverVerification = null;
 			this.sharedSecret = null;
 			this.server = null;
-			this.readable = false;
+			this.redirecting = false;
 			this.playersTabbed = null;
 			this.scoreboards = null;
 			this.teams = null;
@@ -162,7 +162,7 @@ public class ProxySession {
 	}
 
 	public void inboundReceived(Packet packet) {
-		if(!this.readable) {
+		if(this.redirecting) {
 			return;
 		}
 		if(packet instanceof GenericPacket) {
@@ -178,7 +178,10 @@ public class ProxySession {
 		this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleLostConn()));
 	}
 
-	public void outboundReceived(Packet packet) {
+	public void outboundReceived(Channel channel, Packet packet) {
+		if(this.outboundChannel == channel && this.redirecting) {
+			return;
+		}
 		switch(packet.getOpcode()) {
 		case LoginPacket.opcode:
 			LoginPacket loginPacket = (LoginPacket) packet;
@@ -379,12 +382,12 @@ public class ProxySession {
 		return this.server;
 	}
 
-	public boolean isReadable() {
-		return this.readable;
+	public boolean isRedirecting() {
+		return this.redirecting;
 	}
 
-	public void setReadable(boolean readable) {
-		this.readable = readable;
+	public void setRedirecting(boolean redirecting) {
+		this.redirecting = redirecting;
 	}
 
 }
