@@ -65,51 +65,58 @@ public class ProxySession {
 
 	public void inboundAuthenticate() {
 		try {
-			if(!this.serverKey.equals("-")) {
-				String serverKey = SecurityUtils.shaHex(this.getServerKey().getBytes("ISO_8859_1"), this.sharedSecret, this.config.proxy_getKeyPair().getPublic().getEncoded());
-				if(!MinecraftUtils.authenticate(this.username, serverKey)) {
-					this.kick("Error: Authentication to Minecraft.net Failed");
-					return;
-				}
-				if(!this.isInboundConnected()) {
-					return;
-				}
+			boolean success = false;
+			if(this.serverKey.equals("-")) {
+				success = true;
+			} else {
+				success = MinecraftUtils.authenticate(this.username, SecurityUtils.shaHex(this.getServerKey().getBytes("ISO_8859_1"), this.sharedSecret, this.config.proxy_getKeyPair().getPublic().getEncoded()));
 			}
-			if(this.sessionMapper.hasAuthenticatedByUsername(this.username)) {
-				this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleLoggedIn()));
-				return;
-			}
-			if(this.config.proxy_getPlayerMaximum() > 1 && this.sessionMapper.getAuthenticatedSize() >= this.config.proxy_getPlayerMaximum()) {
-				this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleFull()));
-				return;
-			}
-			IPlayerCallback playerCallback = this.config.proxy_getPlayerCallback();
-			if(playerCallback != null) {
-				int notified = playerCallback.notifyPlayerJoin(this.username);
-				if(notified == 0) {
-					this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleLoggedIn()));
-					return;
-				} else if(notified == -1) {
-					this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
-					return;
-				}
-			}
-			String serverName = this.config.proxy_getDomains().get(this.serverHost.toLowerCase());
-			if(serverName == null) {
-				serverName = this.config.proxy_getDomains().get("*");
-			}
-			IServer server = this.config.proxy_getServerSource().getServerByName(serverName);
-			if(server == null) {
-				this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
-				return;
-			}
-			this.state = ProxySessionState.DIRECTING;
-			this.sessionMapper.markAuthenticated(this);
-			this.redirect(server);
+			this.inboundAuthenticate(success);
 		} catch(Exception exception) {
 			exception.printStackTrace();
 			this.kick("Error: Internal Mismatch (0x01)");
 		}
+	}
+
+	public void inboundAuthenticate(boolean success) {
+		if(!this.isInboundConnected()) {
+			return;
+		}
+		if(!success) {
+			this.kick("Error: Authentication to Minecraft.net Failed");
+			return;
+		}
+		if(this.sessionMapper.hasAuthenticatedByUsername(this.username)) {
+			this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleLoggedIn()));
+			return;
+		}
+		if(this.config.proxy_getPlayerMaximum() > 1 && this.sessionMapper.getAuthenticatedSize() >= this.config.proxy_getPlayerMaximum()) {
+			this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleFull()));
+			return;
+		}
+		IPlayerCallback playerCallback = this.config.proxy_getPlayerCallback();
+		if(playerCallback != null) {
+			int notified = playerCallback.notifyPlayerJoin(this.username);
+			if(notified == 0) {
+				this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleLoggedIn()));
+				return;
+			} else if(notified == -1) {
+				this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
+				return;
+			}
+		}
+		String serverName = this.config.proxy_getDomains().get(this.serverHost.toLowerCase());
+		if(serverName == null) {
+			serverName = this.config.proxy_getDomains().get("*");
+		}
+		IServer server = this.config.proxy_getServerSource().getServerByName(serverName);
+		if(server == null) {
+			this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
+			return;
+		}
+		this.state = ProxySessionState.DIRECTING;
+		this.sessionMapper.markAuthenticated(this);
+		this.redirect(server);
 	}
 
 	public void inboundDisconnected() {
