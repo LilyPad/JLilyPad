@@ -40,7 +40,7 @@ public class ProxySession {
 
 	private Channel inboundChannel;
 	private Channel outboundChannel;
-	private ProxySessionState state = ProxySessionState.DISCONNECTED;
+	private LoginState state = LoginState.DISCONNECTED;
 
 	private String username;
 	private String serverHost;
@@ -114,7 +114,7 @@ public class ProxySession {
 			this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
 			return;
 		}
-		this.state = ProxySessionState.DIRECTING;
+		this.state = LoginState.INITIALIZE;
 		this.sessionMapper.markAuthenticated(this);
 		this.redirect(server);
 	}
@@ -154,7 +154,7 @@ public class ProxySession {
 			this.sessionMapper = null;
 			this.inboundChannel = null;
 			this.outboundChannel = null;
-			this.state = ProxySessionState.DISCONNECTED;
+			this.state = LoginState.DISCONNECTED;
 			this.username = null;
 			this.serverHost = null;
 			this.serverKey = null;
@@ -198,7 +198,7 @@ public class ProxySession {
 				loginPacket.setMaxPlayers(0);
 			}
 			this.serverEntityId = loginPacket.getEntityId();
-			if(this.state == ProxySessionState.DIRECTING) {
+			if(this.state == LoginState.INITIALIZE) {
 				this.clientEntityId = loginPacket.getEntityId();
 			} else {
 				this.inboundChannel.write(new RespawnPacket(loginPacket.getDimension() == 0 ? 1 : 0, 2, 0, loginPacket.getHeight(), "DEFAULT"));
@@ -277,7 +277,7 @@ public class ProxySession {
 				if(future.isSuccess()) {
 					return;
 				}
-				kickIfDirecting("Error: Internal Mismatch (0x02)");
+				kickIfInitializing("Error: Internal Mismatch (0x02)");
 			}
 		});
 	}
@@ -288,7 +288,7 @@ public class ProxySession {
 		}
 		this.inboundChannel.write(new KickPacket(message), this.inboundChannel.newPromise()).addListener(new ChannelFutureListener() {
 			public void operationComplete(ChannelFuture future) throws Exception {
-				if(inboundChannel == null || !inboundChannel.isOpen()) {
+				if(!isInboundConnected()) {
 					return;
 				}
 				inboundChannel.close();
@@ -296,8 +296,8 @@ public class ProxySession {
 		});
 	}
 
-	public void kickIfDirecting(String message) {
-		if(this.state != ProxySessionState.DIRECTING) {
+	public void kickIfInitializing(String message) {
+		if(this.state != LoginState.INITIALIZE) {
 			return;
 		}
 		this.kick(message);
@@ -321,7 +321,7 @@ public class ProxySession {
 
 	public void setOutboundChannel(IServer server, Channel channel) {
 		Channel oldOutboundChannel = this.outboundChannel;
-		this.state = ProxySessionState.CONNECTED;
+		this.state = LoginState.CONNECTED;
 		this.server = server;
 		this.outboundChannel = new DummyChannel(channel);
 		if(oldOutboundChannel != null && oldOutboundChannel.isOpen()) {
@@ -329,15 +329,15 @@ public class ProxySession {
 		}
 	}
 
-	public ProxySessionState getState() {
+	public LoginState getState() {
 		return this.state;
 	}
 
 	public boolean isAuthenticated() {
-		return this.state == ProxySessionState.CONNECTED;
+		return this.state == LoginState.CONNECTED;
 	}
 
-	public void setState(ProxySessionState state) {
+	public void setState(LoginState state) {
 		this.state = state;
 	}
 

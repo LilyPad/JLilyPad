@@ -18,7 +18,7 @@ public class ProxyOutboundHandler extends ChannelInboundMessageHandlerAdapter<Pa
 
 	private IServer server;
 	private ProxySession proxySession;
-	private ProxyOutboundHandlerState state = ProxyOutboundHandlerState.DISCONNECTED;
+	private LoginState state = LoginState.DISCONNECTED;
 
 	public ProxyOutboundHandler(IServer server, ProxySession proxySession) {
 		this.server = server;
@@ -33,22 +33,22 @@ public class ProxyOutboundHandler extends ChannelInboundMessageHandlerAdapter<Pa
 		}
 		InetSocketAddress inboundAddress = this.proxySession.getInboundAddress();
 		InetSocketAddress outboundAddress = (InetSocketAddress) channel.remoteAddress();
-		this.state = ProxyOutboundHandlerState.ENCRYPT_REQUEST;
+		this.state = LoginState.ENCRYPT_REQUEST;
 		channel.write(new HandshakePacket(CraftPacketConstants.protocolVersion, this.proxySession.getUsername(), server.getSecurityKey() + ";" + inboundAddress.getAddress().getHostAddress() + ";" + inboundAddress.getPort(), outboundAddress.getPort()));
 	}
 
 	public void channelInactive(ChannelHandlerContext context) throws Exception {
 		try {
-			if(this.state == ProxyOutboundHandlerState.BUFFERING) {
+			if(this.state == LoginState.INITIALIZE) {
 				this.proxySession.setRedirecting(false);
 			}
-			if(this.state != ProxyOutboundHandlerState.DISCONNECTED) {
+			if(this.state != LoginState.DISCONNECTED) {
 				this.proxySession.outboundDisconnected(context.channel());
 			}
 		} finally {
 			this.server = null;
 			this.proxySession = null;
-			this.state = ProxyOutboundHandlerState.DISCONNECTED;
+			this.state = LoginState.DISCONNECTED;
 		}
 	}
 
@@ -63,28 +63,28 @@ public class ProxyOutboundHandler extends ChannelInboundMessageHandlerAdapter<Pa
 			if(packet.getOpcode() == EncryptRequestPacket.opcode) {
 				EncryptRequestPacket encryptRequestPacket = (EncryptRequestPacket) packet;
 				if(!encryptRequestPacket.getServerKey().equals("-")) {
-					this.proxySession.kickIfDirecting("Error: Protocol Mismatch (0x04)");
+					this.proxySession.kickIfInitializing("Error: Protocol Mismatch (0x04)");
 					channel.close();
 					return;
 				}
-				this.state = ProxyOutboundHandlerState.BUFFERING;
+				this.state = LoginState.INITIALIZE;
 				this.proxySession.setRedirecting(true);
 				channel.write(new StatusPacket(0));
 			} else {
-				this.proxySession.kickIfDirecting("Error: Protocol Mismatch (0x05)");
+				this.proxySession.kickIfInitializing("Error: Protocol Mismatch (0x05)");
 				channel.close();
 			}
 			break;
-		case BUFFERING:
+		case INITIALIZE:
 			if(packet.getOpcode() == 0x0D) {
-				this.state = ProxyOutboundHandlerState.CONNECTED;
+				this.state = LoginState.CONNECTED;
 				this.proxySession.setOutboundChannel(this.server, channel);
 				this.proxySession.setRedirecting(false);
 			}
 		case CONNECTED:
 			this.proxySession.outboundReceived(channel, packet);
 			if(packet.getOpcode() == 0xFF) {
-				this.state = ProxyOutboundHandlerState.DISCONNECTED;
+				this.state = LoginState.DISCONNECTED;
 			}
 			break;
 		default:

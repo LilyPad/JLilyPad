@@ -1,11 +1,11 @@
 package lilypad.server.proxy.net;
 
-public enum ProxySessionState {
+public enum LoginState {
 
 	DISCONNECTED,
 	ENCRYPT_REQUEST,
-	VERIFYING,
-	DIRECTING,
+	AUTHENTICATE,
+	INITIALIZE,
 	CONNECTED;
 	
 }
