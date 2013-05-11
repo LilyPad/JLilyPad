@@ -111,7 +111,7 @@ public class GenericPacketUnitArray {
 		opPairs[0x3C] = new OpPair[] { jump(8 + 8 + 8 + 4), intSizedTriple, jump(4 + 4 + 4) };
 		opPairs[0x3D] = new OpPair[] { jump(4 + 4 + 1 + 4 + 4 + 1) };
 		opPairs[0x3E] = new OpPair[] { shortSizedDoubled, jump(4 + 4 + 4 + 4 + 1) };
-		opPairs[0x3F] = new OpPair[] { shortSizedDoubled, jump(8 + 8 + 8 + 8 + 8 + 8 + 8 + 4)};
+		opPairs[0x3F] = new OpPair[] { shortSizedDoubled, jump(4 + 4 + 4 + 4 + 4 + 4 + 4 + 4)};
 		opPairs[0x46] = new OpPair[] { jump(1 + 1) };
 		opPairs[0x47] = new OpPair[] { jump(4 + 1 + 4 + 4 + 4) };
 		opPairs[0x64] = new OpPair[] { jump(1 + 1), shortSizedDoubled, jump(1 + 1) };
