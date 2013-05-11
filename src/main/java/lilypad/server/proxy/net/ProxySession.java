@@ -324,6 +324,7 @@ public class ProxySession {
 		this.state = LoginState.CONNECTED;
 		this.server = server;
 		this.outboundChannel = new DummyChannel(channel);
+		this.redirecting = false;
 		if(oldOutboundChannel != null && oldOutboundChannel.isOpen()) {
 			oldOutboundChannel.close();
 		}

@@ -79,7 +79,6 @@ public class ProxyOutboundHandler extends ChannelInboundMessageHandlerAdapter<Pa
 			if(packet.getOpcode() == 0x0D) {
 				this.state = LoginState.CONNECTED;
 				this.proxySession.setOutboundChannel(this.server, channel);
-				this.proxySession.setRedirecting(false);
 			}
 		case CONNECTED:
 			this.proxySession.outboundReceived(channel, packet);
