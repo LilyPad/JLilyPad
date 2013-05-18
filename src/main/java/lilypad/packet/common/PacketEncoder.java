@@ -21,16 +21,5 @@ public class PacketEncoder extends ChannelOutboundMessageHandlerAdapter<Packet> 
 		context.nextOutboundByteBuffer().writeBytes(this.outboundBuffer);
 		this.outboundBuffer.discardSomeReadBytes();
 	}
-	
-	public void freeOutboundBuffer(ChannelHandlerContext context) throws Exception {
-		super.freeOutboundBuffer(context);
-		try {
-			this.outboundBuffer.release();
-		} catch(Exception exception) {
-			// ignore
-		} finally {
-			this.outboundBuffer = null;
-		}
-	}
 
 }
