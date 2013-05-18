@@ -21,10 +21,11 @@ public class QueryUdpService extends Service<QueryUdpConfig> {
 		this.running = true;
 	}
 
+	@SuppressWarnings("deprecation")
 	public void disable() {
 		try {
 			if (this.bootstrap != null) {
-				this.bootstrap.shutdown();
+				this.bootstrap.shutdown(); // TODO deprecation
 			}
 		} catch (Exception exception) {
 			exception.printStackTrace();

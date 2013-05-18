@@ -25,7 +25,7 @@ public class QueryUdpHandler extends ChannelInboundMessageHandlerAdapter<Datagra
 	}
 
 	public void messageReceived(ChannelHandlerContext context, DatagramPacket packet) throws Exception {
-		ByteBuf buffer = packet.data();
+		ByteBuf buffer = packet.content();
 		if(buffer.readableBytes() < 3) {
 			return;
 		}
@@ -37,7 +37,7 @@ public class QueryUdpHandler extends ChannelInboundMessageHandlerAdapter<Datagra
 		int requestId = buffer.readInt();
 		switch(opcode) {
 		case 0:
-			if(!this.verifyIdentification(packet.remoteAddress(), requestId, buffer.readInt())) {
+			if(!this.verifyIdentification(packet.sender(), requestId, buffer.readInt())) {
 				return;
 			}
 			response = Unpooled.buffer();
@@ -87,16 +87,16 @@ public class QueryUdpHandler extends ChannelInboundMessageHandlerAdapter<Datagra
 				response.writeShort(Short.reverseBytes((short) this.playable.getBindAddress().getPort()));
 				response.writeBytes(this.playable.getBindAddress().getHostName().getBytes()); response.writeByte(0x00);
 			}
-			context.write(new DatagramPacket(response, packet.remoteAddress()));
+			context.write(new DatagramPacket(response, packet.sender()));
 			break;
 		case 9:
 			QueryUdpIdentification identification = new QueryUdpIdentification(requestId);
-			this.addressToIdentification.put(packet.remoteAddress(), identification);
+			this.addressToIdentification.put(packet.sender(), identification);
 			response = Unpooled.buffer();
 			response.writeByte(0x09);
 			response.writeInt(identification.getRequestId());
 			response.writeBytes(Integer.toString(identification.getChallenge()).getBytes()); response.writeByte(0x00);
-			context.write(new DatagramPacket(response, packet.remoteAddress()));
+			context.write(new DatagramPacket(response, packet.sender()));
 			break;
 		}
 	}

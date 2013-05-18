@@ -1,7 +1,6 @@
 package lilypad.server.query.tcp;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.BufType;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -16,7 +15,7 @@ import lilypad.server.common.service.Service;
 
 public class QueryTcpService extends Service<QueryTcpConfig> {
 	
-	private static final StringEncoder stringEncoder = new StringEncoder(BufType.MESSAGE);
+	private static final StringEncoder stringEncoder = new StringEncoder();
 	private static final StringDecoder stringDecoder = new StringDecoder();
 	private QueryTcpHandler handler;
 	
@@ -42,10 +41,11 @@ public class QueryTcpService extends Service<QueryTcpConfig> {
 		this.running = true;
 	}
 
+	@SuppressWarnings("deprecation")
 	public void disable() {
 		try {
 			if (this.serverBootstrap != null) {
-				this.serverBootstrap.shutdown();
+				this.serverBootstrap.shutdown(); // TODO deprecation.
 			}
 		} catch (Exception exception) {
 			exception.printStackTrace();
