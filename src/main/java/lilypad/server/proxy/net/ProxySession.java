@@ -105,8 +105,9 @@ public class ProxySession {
 			}
 		}
 		String serverName = this.config.proxy_getDomains().get(this.serverHost.toLowerCase());
-		if(serverName == null) {
-			serverName = this.config.proxy_getDomains().get("*");
+		if(serverName == null && (serverName = this.config.proxy_getDomains().get("*")) == null) {
+			this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
+			return;
 		}
 		IServer server = this.config.proxy_getServerSource().getServerByName(serverName);
 		if(server == null) {
