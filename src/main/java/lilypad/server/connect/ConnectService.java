@@ -49,10 +49,11 @@ public class ConnectService extends Service<ConnectConfig> implements IServerSou
 		this.running = true;
 	}
 
+	@SuppressWarnings("deprecation")
 	public void disable() {
 		try {
 			if (this.serverBootstrap != null) {
-				this.serverBootstrap.shutdown();
+				this.serverBootstrap.shutdown(); // TODO deprecation.
 			}
 			if(this.nodeSessionMapper != null) {
 				this.nodeSessionMapper.clear();
