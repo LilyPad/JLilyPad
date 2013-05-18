@@ -38,18 +38,4 @@ public class AESDecoder extends ByteToByteDecoder {
 			out.writeBytes(this.decoderOut, 0, read);
 		}
 	}
-
-	public void freeInboundBuffer(ChannelHandlerContext context) throws Exception {
-		super.freeInboundBuffer(context);
-		try {
-			this.aesCipherDecoder.reset();
-		} catch(Exception exception) {
-			// ignore
-		} finally {
-			this.aesCipherDecoder = null;
-			this.decoderIn = null;
-			this.decoderOut = null;
-		}
-	}
-
 }

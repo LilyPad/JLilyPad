@@ -54,13 +54,14 @@ public class ProxyService extends Service<ProxyConfig> implements IPlayable {
 		this.running = true;
 	}
 
+	@SuppressWarnings("deprecation")
 	public void disable() {
 		try {
 			if(this.proxySessionMapper != null) {
 				this.proxySessionMapper.kickAuthenticated(CraftPacketConstants.colorize(this.config.proxy_getLocaleShutdown()));
 			}
 			if(this.serverBootstrap != null) {
-				this.serverBootstrap.shutdown();
+				this.serverBootstrap.shutdown(); // TODO deprecation
 			}
 			if(this.proxySessionMapper != null) {
 				this.proxySessionMapper.clear();
