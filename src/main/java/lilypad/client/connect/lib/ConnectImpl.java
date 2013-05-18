@@ -95,7 +95,7 @@ public class ConnectImpl implements Connect {
 		this.channel = future.channel();
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "deprecation" })
 	public void disconnect() {
 		try {
 			if(this.pendingFutures != null) {
@@ -105,7 +105,7 @@ public class ConnectImpl implements Connect {
 				this.pendingFutures.clear();
 			}
 			if(this.bootstrap != null) {
-				this.bootstrap.shutdown();
+				this.bootstrap.shutdown(); // TODO deprecation
 			}
 			if(this.channel != null && this.channel.isOpen()) {
 				this.channel.close().sync();
