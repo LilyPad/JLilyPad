@@ -62,8 +62,8 @@ public class ProxyCache {
 		}
 		this.maximumPlayersShown = 0;
 		for(int maximumPlayers : this.maximumPlayers) {
-			if(maximumPlayers == 1) {
-				this.maximumPlayersShown = 1;
+			if(maximumPlayers <= 1) {
+				this.maximumPlayersShown = maximumPlayers;
 				break;
 			}
 			this.maximumPlayersShown += maximumPlayers;
