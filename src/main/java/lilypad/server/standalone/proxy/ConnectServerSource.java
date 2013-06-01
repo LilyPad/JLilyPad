@@ -1,5 +1,6 @@
 package lilypad.server.standalone.proxy;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,7 +19,12 @@ public class ConnectServerSource implements IServerSource, ServerEventListener {
 	}
 
 	public void onServerAdd(Connect connect, ServerAddEvent event) {
-		this.servers.put(event.getServer(), new ConnectServer(event.getServer(), event.getAddress(), event.getSecurityKey()));
+		String address = event.getAddress().getAddress().getHostAddress();
+		if(address.equals("127.0.0.1") || address.equals("localhost")) {
+			this.servers.put(event.getServer(), new ConnectServer(event.getServer(), new InetSocketAddress(connect.getSettings().getOutboundAddress().getHostName(), event.getAddress().getPort()), event.getSecurityKey()));
+		} else {
+			this.servers.put(event.getServer(), new ConnectServer(event.getServer(), event.getAddress(), event.getSecurityKey()));
+		}
 	}
 
 	public void onServerRemove(Connect connect, String server) {
