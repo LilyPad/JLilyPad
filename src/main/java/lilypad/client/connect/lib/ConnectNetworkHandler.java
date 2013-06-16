@@ -1,5 +1,6 @@
 package lilypad.client.connect.lib;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import lilypad.client.connect.api.MessageEvent;
@@ -16,6 +17,7 @@ import lilypad.packet.connect.impl.ServerPacket;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundMessageHandlerAdapter;
+import io.netty.handler.timeout.ReadTimeoutException;
 
 public class ConnectNetworkHandler extends ChannelInboundMessageHandlerAdapter<Packet> {
 	
@@ -72,7 +74,13 @@ public class ConnectNetworkHandler extends ChannelInboundMessageHandlerAdapter<P
 	
 	public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
 		Channel channel = context.channel();
-		//cause.printStackTrace(); ignore
+		if(cause instanceof IOException) {
+			if(!cause.getMessage().equals("Connection reset by peer")) {
+				cause.printStackTrace();
+			}
+		} else if (!(cause instanceof ReadTimeoutException)) {
+			cause.printStackTrace();
+		}
 		if(channel.isOpen()) {
 			channel.close();
 		}
