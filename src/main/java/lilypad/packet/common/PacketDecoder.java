@@ -1,8 +1,8 @@
 package lilypad.packet.common;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.MessageBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.MessageList;
 import io.netty.handler.codec.ReplayingDecoder;
 
 public class PacketDecoder extends ReplayingDecoder<Void> {
@@ -13,13 +13,16 @@ public class PacketDecoder extends ReplayingDecoder<Void> {
 		this.packetCodecRegistry = packetCodecRegistry;
 	}
 
-	public void decode(ChannelHandlerContext context, ByteBuf buffer, MessageBuf<Object> messageBuf) throws Exception {
-		PacketCodec<?> packetCodec = this.packetCodecRegistry.getOpcode(buffer.readUnsignedByte());
-		if(packetCodec == null) {
-			context.close();
-			return;
+	@Override
+	public void decode(ChannelHandlerContext context, ByteBuf buffer, MessageList<Object> messageBuf) throws Exception {
+		while(buffer.isReadable()) {
+			PacketCodec<?> packetCodec = this.packetCodecRegistry.getOpcode(buffer.readUnsignedByte());
+			if(packetCodec == null) {
+				context.close();
+				return;
+			}
+			messageBuf.add(packetCodec.decode(buffer));
 		}
-		messageBuf.add(packetCodec.decode(buffer));
 	}
 
 }
