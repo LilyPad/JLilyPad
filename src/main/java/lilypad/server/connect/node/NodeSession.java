@@ -118,7 +118,7 @@ public class NodeSession implements IServer {
 
 	public void cleanup() {
 		try {
-			if(this.connectService != null && this.isAuthenticated()) {
+			if(this.connectService != null && this.connectService.isRunning() && this.isAuthenticated()) {
 				this.connectService.getSessionMapper().remove(this);
 				switch(this.role) {
 				case PROXY:
