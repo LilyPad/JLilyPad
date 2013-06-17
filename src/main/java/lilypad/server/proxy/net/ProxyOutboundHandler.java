@@ -63,7 +63,6 @@ public class ProxyOutboundHandler extends ChannelInboundHandlerAdapter {
 			return;
 		}
 		MessageList<Packet> packets = msgs.cast();
-		MessageList<Object> decodedPackets = MessageList.newInstance(); 
 		Packet packet;
 		for(int i = 0; i < msgs.size() && channel.isOpen(); i++) {
 			packet = packets.get(i);
@@ -98,10 +97,8 @@ public class ProxyOutboundHandler extends ChannelInboundHandlerAdapter {
 			default:
 				break;
 			}
-			decodedPackets.add(packet);
 		}
-		packets.recycle();
-		context.fireMessageReceived(decodedPackets);
+		packets.releaseAllAndRecycle();
 	}
 
 	@Override
