@@ -29,7 +29,8 @@ public class ProxyService extends Service<ProxyConfig> implements IPlayable {
 	private ProxyInboundHandler proxyInboundHandler;
 	private ProxySessionMapper proxySessionMapper;
 	
-	private ServerBootstrap serverBootstrap;
+	private NioEventLoopGroup parentEventGroup;
+	private NioEventLoopGroup childEventGroup;
 	private boolean running;
 	
 	private ProxyConfig config;
@@ -39,7 +40,7 @@ public class ProxyService extends Service<ProxyConfig> implements IPlayable {
 		this.authExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 		this.proxySessionMapper = new ProxySessionMapper();
 		this.proxyInboundHandler = new ProxyInboundHandler(config, this.proxySessionMapper, this.authExecutorService);
-		this.serverBootstrap = new ServerBootstrap().group(new NioEventLoopGroup(), new NioEventLoopGroup())
+		ServerBootstrap serverBootstrap = new ServerBootstrap().group(this.parentEventGroup = new NioEventLoopGroup(), this.childEventGroup = new NioEventLoopGroup())
 				.channel(NioServerSocketChannel.class)
 				.localAddress(config.proxy_getBindAddress())
 				.childHandler(new ChannelInitializer<SocketChannel>() {
@@ -50,18 +51,20 @@ public class ProxyService extends Service<ProxyConfig> implements IPlayable {
 						channel.pipeline().addLast(proxyInboundHandler);
 					}
 		});
-		this.serverBootstrap.bind().sync();
+		serverBootstrap.bind().sync();
 		this.running = true;
 	}
 
-	@SuppressWarnings("deprecation")
 	public void disable() {
 		try {
 			if(this.proxySessionMapper != null) {
 				this.proxySessionMapper.kickAuthenticated(CraftPacketConstants.colorize(this.config.proxy_getLocaleShutdown()));
 			}
-			if(this.serverBootstrap != null) {
-				this.serverBootstrap.shutdown(); // TODO deprecation
+			if(this.parentEventGroup != null) {
+				this.parentEventGroup.shutdownGracefully();
+			}
+			if(this.childEventGroup != null) {
+				this.childEventGroup.shutdownGracefully();
 			}
 			if(this.proxySessionMapper != null) {
 				this.proxySessionMapper.clear();
@@ -75,7 +78,8 @@ public class ProxyService extends Service<ProxyConfig> implements IPlayable {
 			this.authExecutorService = null;
 			this.proxyInboundHandler = null;
 			this.proxySessionMapper = null;
-			this.serverBootstrap = null;
+			this.parentEventGroup = null;
+			this.childEventGroup = null;
 			this.running = false;
 			this.config = null;
 		}
