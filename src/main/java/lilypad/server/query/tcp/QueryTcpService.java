@@ -19,13 +19,13 @@ public class QueryTcpService extends Service<QueryTcpConfig> {
 	private static final StringDecoder stringDecoder = new StringDecoder();
 	private QueryTcpHandler handler;
 	
-	private ServerBootstrap serverBootstrap;
+	private NioEventLoopGroup parentEventGroup;
+	private NioEventLoopGroup childEventGroup;
 	private boolean running;
 	
 	public void enable(QueryTcpConfig config) throws Exception {
 		this.handler = new QueryTcpHandler(config.querytcp_getPlayable());
-		this.serverBootstrap = new ServerBootstrap();
-		this.serverBootstrap.group(new NioEventLoopGroup(), new NioEventLoopGroup())
+		ServerBootstrap serverBootstrap = new ServerBootstrap().group(this.parentEventGroup = new NioEventLoopGroup(), this.childEventGroup = new NioEventLoopGroup())
 				.channel(NioServerSocketChannel.class)
 				.localAddress(config.querytcp_getBindAddress())
 				.childHandler(new ChannelInitializer<SocketChannel>() {
@@ -37,21 +37,24 @@ public class QueryTcpService extends Service<QueryTcpConfig> {
 						channel.pipeline().addLast(handler);
 					}
 		});
-		this.serverBootstrap.bind().sync();
+		serverBootstrap.bind().sync();
 		this.running = true;
 	}
 
-	@SuppressWarnings("deprecation")
 	public void disable() {
 		try {
-			if (this.serverBootstrap != null) {
-				this.serverBootstrap.shutdown(); // TODO deprecation.
+			if(this.parentEventGroup != null) {
+				this.parentEventGroup.shutdownGracefully();
+			}
+			if(this.childEventGroup != null) {
+				this.childEventGroup.shutdownGracefully();
 			}
 		} catch (Exception exception) {
 			exception.printStackTrace();
 		} finally {
 			this.handler = null;
-			this.serverBootstrap = null;
+			this.parentEventGroup = null;
+			this.childEventGroup = null;
 			this.running = false;
 		}
 	}

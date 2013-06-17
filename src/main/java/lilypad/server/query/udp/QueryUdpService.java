@@ -8,29 +8,27 @@ import lilypad.server.common.service.Service;
 
 public class QueryUdpService extends Service<QueryUdpConfig> {
 	
-	private Bootstrap bootstrap;
+	private NioEventLoopGroup eventGroup;
 	private boolean running;
 
 	public void enable(QueryUdpConfig config) throws Exception {
-		this.bootstrap = new Bootstrap();
-		this.bootstrap.group(new NioEventLoopGroup())
+		Bootstrap bootstrap = new Bootstrap().group(this.eventGroup = new NioEventLoopGroup())
 				.channel(NioDatagramChannel.class)
 				.localAddress(config.queryudp_getBindAddress())
 				.handler(new QueryUdpHandler(config.queryudp_getPlayable()));
-		this.bootstrap.bind().sync();
+		bootstrap.bind().sync();
 		this.running = true;
 	}
 
-	@SuppressWarnings("deprecation")
 	public void disable() {
 		try {
-			if (this.bootstrap != null) {
-				this.bootstrap.shutdown(); // TODO deprecation
+			if (this.eventGroup != null) {
+				this.eventGroup.shutdownGracefully();
 			}
 		} catch (Exception exception) {
 			exception.printStackTrace();
 		} finally {
-			this.bootstrap = null;
+			this.eventGroup = null;
 			this.running = false;
 		}
 	}
