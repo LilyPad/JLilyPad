@@ -46,7 +46,7 @@ import lilypad.packet.connect.impl.RequestPacket;
 
 public class ConnectImpl implements Connect {
 
-	private Bootstrap bootstrap;
+	private NioEventLoopGroup eventGroup;
 	private Channel channel;
 
 	private ConnectSettings settings;
@@ -76,26 +76,25 @@ public class ConnectImpl implements Connect {
 
 	public void connect() throws Throwable {
 		this.disconnect();
-		this.bootstrap = new Bootstrap();
-		this.bootstrap.group(new NioEventLoopGroup())
-		.channel(NioSocketChannel.class)
-		.localAddress(new InetSocketAddress(InetAddress.getByName(this.inboundIp), 0))
-		.handler(new ChannelInitializer<SocketChannel>() {
-			public void initChannel(SocketChannel channel) throws Exception {
-				channel.pipeline().addLast(new ReadTimeoutHandler(10));
-				channel.pipeline().addLast(new PacketEncoder(ConnectPacketCodecRegistry.instance));
-				channel.pipeline().addLast(new PacketDecoder(ConnectPacketCodecRegistry.instance));
-				channel.pipeline().addLast(new ConnectNetworkHandler(ConnectImpl.this));
-			}
+		Bootstrap bootstrap = new Bootstrap().group(this.eventGroup = new NioEventLoopGroup())
+				.channel(NioSocketChannel.class)
+				.localAddress(new InetSocketAddress(InetAddress.getByName(this.inboundIp), 0))
+				.handler(new ChannelInitializer<SocketChannel>() {
+					public void initChannel(SocketChannel channel) throws Exception {
+						channel.pipeline().addLast(new ReadTimeoutHandler(10));
+						channel.pipeline().addLast(new PacketEncoder(ConnectPacketCodecRegistry.instance));
+						channel.pipeline().addLast(new PacketDecoder(ConnectPacketCodecRegistry.instance));
+						channel.pipeline().addLast(new ConnectNetworkHandler(ConnectImpl.this));
+					}
 		});
-		ChannelFuture future = this.bootstrap.connect(this.settings.getOutboundAddress()).sync();
+		ChannelFuture future = bootstrap.connect(this.settings.getOutboundAddress()).sync();
 		if(!future.isSuccess()) {
 			throw future.cause();
 		}
 		this.channel = future.channel();
 	}
 
-	@SuppressWarnings({ "rawtypes", "deprecation" })
+	@SuppressWarnings("rawtypes")
 	public void disconnect() {
 		try {
 			if(this.pendingFutures != null) {
@@ -104,8 +103,8 @@ public class ConnectImpl implements Connect {
 				}
 				this.pendingFutures.clear();
 			}
-			if(this.bootstrap != null) {
-				this.bootstrap.shutdown(); // TODO deprecation
+			if(this.eventGroup != null) {
+				this.eventGroup.shutdownGracefully();
 			}
 			if(this.channel != null && this.channel.isOpen()) {
 				this.channel.close().sync();
@@ -113,7 +112,7 @@ public class ConnectImpl implements Connect {
 		} catch(Exception exception) {
 			// ignore
 		} finally {
-			this.bootstrap = null;
+			this.eventGroup = null;
 			this.channel = null;
 		}
 	}
@@ -260,7 +259,7 @@ public class ConnectImpl implements Connect {
 	}
 
 	public boolean isConnected() {
-		return this.bootstrap != null && this.channel != null && this.channel.isOpen();
+		return this.channel != null && this.channel.isOpen();
 	}
 
 	public boolean isClosed() {
