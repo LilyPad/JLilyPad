@@ -9,33 +9,44 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundMessageHandlerAdapter;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.MessageList;
 import io.netty.handler.timeout.ReadTimeoutException;
 import lilypad.server.common.IPlayable;
 
 @Sharable
-public class QueryTcpHandler extends ChannelInboundMessageHandlerAdapter<String> {
+public class QueryTcpHandler extends ChannelInboundHandlerAdapter {
 
 	private IPlayable playable;
-	
+
 	public QueryTcpHandler(IPlayable playable) {
 		this.playable = playable;
 	}
 
-	public void messageReceived(final ChannelHandlerContext context, String string) throws Exception {
+	@Override
+	public void messageReceived(final ChannelHandlerContext context, MessageList<Object> msgs) throws Exception {
 		final Channel channel = context.channel();
-		String response = this.generateResponse(string.toUpperCase());
-		if(response != null) {
-			channel.write(response).addListener(new ChannelFutureListener() {
-				public void operationComplete(ChannelFuture future) throws Exception {
-					channel.close();
-				}
-			});
-		} else {
-			channel.close();
+		MessageList<String> strings = msgs.cast();
+		MessageList<Object> decodedStrings = MessageList.newInstance();
+		String string;
+		for(int i = 0; i < msgs.size() && channel.isOpen(); i++) {
+			string = strings.get(i);
+			String response = this.generateResponse(string.toUpperCase());
+			if(response != null) {
+				channel.write(response).addListener(new ChannelFutureListener() {
+					public void operationComplete(ChannelFuture future) throws Exception {
+						channel.close();
+					}
+				});
+			} else {
+				channel.close();
+			}
+			decodedStrings.add(string);
 		}
+		strings.recycle();
+		context.fireMessageReceived(decodedStrings);
 	}
-	
+
 	private String generateResponse(String request) {
 		StringBuilder response = new StringBuilder();
 		Set<String> players = this.playable.getPlayers();
@@ -53,8 +64,8 @@ public class QueryTcpHandler extends ChannelInboundMessageHandlerAdapter<String>
 		}
 		return null;
 	}
-	
-    public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
+
+	public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
 		Channel channel = context.channel();
 		if(cause instanceof IOException) {
 			if(!cause.getMessage().equals("Connection reset by peer")) {
@@ -67,5 +78,5 @@ public class QueryTcpHandler extends ChannelInboundMessageHandlerAdapter<String>
 			channel.close();
 		}
 	}
-	
+
 }
