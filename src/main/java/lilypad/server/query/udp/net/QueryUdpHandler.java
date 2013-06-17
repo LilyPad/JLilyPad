@@ -28,7 +28,6 @@ public class QueryUdpHandler extends ChannelInboundHandlerAdapter {
 	@Override
 	public void messageReceived(ChannelHandlerContext context, MessageList<Object> msgs) throws Exception {
 		MessageList<DatagramPacket> datagrams = msgs.cast();
-		MessageList<Object> decodedDatagrams = MessageList.newInstance();
 		DatagramPacket packet;
 		for(int i = 0; i < msgs.size(); i++) {
 			packet = datagrams.get(i);
@@ -106,10 +105,8 @@ public class QueryUdpHandler extends ChannelInboundHandlerAdapter {
 				context.write(new DatagramPacket(response, packet.sender()));
 				break;
 			}
-			decodedDatagrams.add(packet);
 		}
-		datagrams.recycle();
-		context.fireMessageReceived(decodedDatagrams);
+		datagrams.releaseAllAndRecycle();
 	}
 
 	public boolean verifyIdentification(SocketAddress remoteAddress, int requestId, int challenge) {

@@ -27,7 +27,6 @@ public class QueryTcpHandler extends ChannelInboundHandlerAdapter {
 	public void messageReceived(final ChannelHandlerContext context, MessageList<Object> msgs) throws Exception {
 		final Channel channel = context.channel();
 		MessageList<String> strings = msgs.cast();
-		MessageList<Object> decodedStrings = MessageList.newInstance();
 		String string;
 		for(int i = 0; i < msgs.size() && channel.isOpen(); i++) {
 			string = strings.get(i);
@@ -41,10 +40,8 @@ public class QueryTcpHandler extends ChannelInboundHandlerAdapter {
 			} else {
 				channel.close();
 			}
-			decodedStrings.add(string);
 		}
-		strings.recycle();
-		context.fireMessageReceived(decodedStrings);
+		strings.releaseAllAndRecycle();
 	}
 
 	private String generateResponse(String request) {
