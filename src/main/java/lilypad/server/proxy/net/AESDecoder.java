@@ -7,10 +7,12 @@ import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToByteDecoder;
+import io.netty.channel.MessageList;
+import io.netty.handler.codec.ByteToMessageDecoder;
 
-public class AESDecoder extends ByteToByteDecoder {
+public class AESDecoder extends ByteToMessageDecoder {
 
 	private static final int bufferSize = 1024;
 
@@ -24,8 +26,8 @@ public class AESDecoder extends ByteToByteDecoder {
 		this.decoderOut = new byte[this.aesCipherDecoder.getOutputSize(bufferSize)];
 	}
 
-	@Override
-	public void decode(ChannelHandlerContext context, ByteBuf in, ByteBuf out) throws Exception {
+	protected void decode(ChannelHandlerContext context, ByteBuf in, MessageList<Object> out) throws Exception {
+		ByteBuf buffer = Unpooled.buffer(this.aesCipherDecoder.getOutputSize(in.readableBytes()));
 		int read;
 		while(in.isReadable()) {
 			if(in.readableBytes() > bufferSize) {
@@ -35,7 +37,8 @@ public class AESDecoder extends ByteToByteDecoder {
 			}
 			in.readBytes(this.decoderIn, 0, read);
 			read = this.aesCipherDecoder.processBytes(this.decoderIn, 0, read, this.decoderOut, 0);
-			out.writeBytes(this.decoderOut, 0, read);
+			buffer.writeBytes(this.decoderOut, 0, read);
 		}
+		out.add(buffer);
 	}
 }
