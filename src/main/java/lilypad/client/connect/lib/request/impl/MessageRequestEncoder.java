@@ -9,8 +9,8 @@ import lilypad.packet.connect.ConnectPacketConstants;
 public class MessageRequestEncoder implements RequestEncoder<MessageRequest> {
 
 	public void encode(MessageRequest request, ByteBuf buffer) {
-		buffer.writeShort(request.getUsernames().size());
-		for(String username : request.getUsernames()) {
+		buffer.writeShort(request.getRecipients().size());
+		for(String username : request.getRecipients()) {
 			BufferUtils.writeString16(username, buffer);
 		}
 		BufferUtils.writeString16(request.getChannel(), buffer);
