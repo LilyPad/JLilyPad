@@ -31,7 +31,6 @@ public class ConnectNetworkHandler extends ChannelInboundHandlerAdapter {
 	@Override
 	public void messageReceived(ChannelHandlerContext context, MessageList<Object> msgs) throws Exception {
 		MessageList<Packet> packets = msgs.cast();
-		MessageList<Object> decodedPackets = MessageList.newInstance(); 
 		Packet packet;
 		for(int i = 0; i < msgs.size() && context.channel().isOpen(); i++) {
 			packet = packets.get(i);
@@ -77,10 +76,8 @@ public class ConnectNetworkHandler extends ChannelInboundHandlerAdapter {
 				context.close(); // invalid packet
 				break;
 			}
-			decodedPackets.add(packet);
 		}
-		packets.recycle();
-		context.fireMessageReceived(decodedPackets);
+		packets.releaseAllAndRecycle();
 	}
 
 	@Override
