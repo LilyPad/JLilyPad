@@ -24,7 +24,8 @@ public class ConnectService extends Service<ConnectConfig> implements IServerSou
 	private NodeSessionKeepalive nodeSessionPinger;
 	private ProxyCache proxyCache;
 	
-	private ServerBootstrap serverBootstrap;
+	private NioEventLoopGroup parentEventGroup;
+	private NioEventLoopGroup childEventGroup;
 	private boolean running;
 
 	public void enable(ConnectConfig config) throws Exception {
@@ -33,8 +34,7 @@ public class ConnectService extends Service<ConnectConfig> implements IServerSou
 		this.nodeSessionPinger = new NodeSessionKeepalive(this.nodeSessionMapper);
 		this.nodeSessionPinger.start();
 		this.nodeHandler = new NodeHandler(this, config.connect_getAuthenticator(), config.connect_getPlayable());
-		this.serverBootstrap = new ServerBootstrap();
-		this.serverBootstrap.group(new NioEventLoopGroup(), new NioEventLoopGroup())
+		ServerBootstrap serverBootstrap = new ServerBootstrap().group(this.parentEventGroup = new NioEventLoopGroup(), this.childEventGroup = new NioEventLoopGroup())
 				.channel(NioServerSocketChannel.class)
 				.localAddress(config.connect_getBindAddress())
 				.childHandler(new ChannelInitializer<SocketChannel>() {
@@ -45,15 +45,17 @@ public class ConnectService extends Service<ConnectConfig> implements IServerSou
 						channel.pipeline().addLast(nodeHandler);
 					}
 		});
-		this.serverBootstrap.bind().sync();
+		serverBootstrap.bind().sync();
 		this.running = true;
 	}
 
-	@SuppressWarnings("deprecation")
 	public void disable() {
 		try {
-			if (this.serverBootstrap != null) {
-				this.serverBootstrap.shutdown(); // TODO deprecation.
+			if (this.parentEventGroup != null) {
+				this.parentEventGroup.shutdownGracefully();
+			}
+			if (this.childEventGroup != null) {
+				this.childEventGroup.shutdownGracefully();
 			}
 			if(this.nodeSessionMapper != null) {
 				this.nodeSessionMapper.clear();
@@ -67,7 +69,8 @@ public class ConnectService extends Service<ConnectConfig> implements IServerSou
 			this.nodeHandler = null;
 			this.nodeSessionMapper = null;
 			this.nodeSessionPinger = null;
-			this.serverBootstrap = null;
+			this.parentEventGroup = null;
+			this.childEventGroup = null;
 			this.running = false;
 		}
 	}
