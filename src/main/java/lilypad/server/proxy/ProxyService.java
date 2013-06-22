@@ -37,7 +37,7 @@ public class ProxyService extends Service<ProxyConfig> implements IPlayable {
 	
 	public void enable(ProxyConfig config) throws Exception {
 		this.config = config;
-		this.authExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+		this.authExecutorService = Executors.newCachedThreadPool();
 		this.proxySessionMapper = new ProxySessionMapper();
 		this.proxyInboundHandler = new ProxyInboundHandler(config, this.proxySessionMapper, this.authExecutorService);
 		ServerBootstrap serverBootstrap = new ServerBootstrap().group(this.parentEventGroup = new NioEventLoopGroup(), this.childEventGroup = new NioEventLoopGroup())
