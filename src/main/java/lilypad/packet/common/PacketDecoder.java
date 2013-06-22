@@ -15,12 +15,15 @@ public class PacketDecoder extends ReplayingDecoder<Void> {
 
 	@Override
 	public void decode(ChannelHandlerContext context, ByteBuf buffer, MessageList<Object> messageBuf) throws Exception {
-		PacketCodec<?> packetCodec = this.packetCodecRegistry.getOpcode(buffer.readUnsignedByte());
-		if(packetCodec == null) {
-			context.close();
-			return;
+		while(true) {
+			PacketCodec<?> packetCodec = this.packetCodecRegistry.getOpcode(buffer.readUnsignedByte());
+			if(packetCodec == null) {
+				context.close();
+				return;
+			}
+			messageBuf.add(packetCodec.decode(buffer));
+			super.checkpoint();
 		}
-		messageBuf.add(packetCodec.decode(buffer));
 	}
 
 }
