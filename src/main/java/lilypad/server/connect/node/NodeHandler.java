@@ -11,13 +11,12 @@ import lilypad.server.connect.ConnectService;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.MessageList;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.util.AttributeKey;
 
 @Sharable
-public class NodeHandler extends ChannelInboundHandlerAdapter {
+public class NodeHandler extends SimpleChannelInboundHandler<Packet> {
 
 	private static final AttributeKey<NodeSession> nodeSession = new AttributeKey<NodeSession>("nodeSession");
 
@@ -40,27 +39,21 @@ public class NodeHandler extends ChannelInboundHandlerAdapter {
 	public void channelInactive(ChannelHandlerContext context) throws Exception {
 		context.attr(nodeSession).getAndSet(null).cleanup();
 	}
-
+	
 	@Override
-	public void messageReceived(ChannelHandlerContext context, MessageList<Object> msgs) throws Exception {
-		MessageList<Packet> packets = msgs.cast();
-		Packet packet;
-		for(int i = 0; i < msgs.size() && context.channel().isOpen(); i++) {
-			packet = packets.get(i);
-			switch(packet.getOpcode()) {
-			case 0x00:
-				KeepalivePacket keepalivePacket = (KeepalivePacket) packet;
-				context.attr(nodeSession).get().pong(keepalivePacket.getRandom());
-				break;
-			case 0x01:
-				context.attr(nodeSession).get().handleRequest((RequestPacket) packet);
-				break;
-			default:
-				context.close(); // invalid packet
-				break;
-			}
+	protected void messageReceived(ChannelHandlerContext context, Packet packet) throws Exception {
+		switch(packet.getOpcode()) {
+		case 0x00:
+			KeepalivePacket keepalivePacket = (KeepalivePacket) packet;
+			context.attr(nodeSession).get().pong(keepalivePacket.getRandom());
+			break;
+		case 0x01:
+			context.attr(nodeSession).get().handleRequest((RequestPacket) packet);
+			break;
+		default:
+			context.close(); // invalid packet
+			break;
 		}
-		packets.releaseAllAndRecycle();
 	}
 
 	@Override
