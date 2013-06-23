@@ -9,39 +9,32 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.MessageList;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.ReadTimeoutException;
 import lilypad.server.common.IPlayable;
 
 @Sharable
-public class QueryTcpHandler extends ChannelInboundHandlerAdapter {
+public class QueryTcpHandler extends SimpleChannelInboundHandler<String> {
 
 	private IPlayable playable;
 
 	public QueryTcpHandler(IPlayable playable) {
 		this.playable = playable;
 	}
-
+	
 	@Override
-	public void messageReceived(final ChannelHandlerContext context, MessageList<Object> msgs) throws Exception {
+	protected void messageReceived(ChannelHandlerContext context, String string) throws Exception {
 		final Channel channel = context.channel();
-		MessageList<String> strings = msgs.cast();
-		String string;
-		for(int i = 0; i < msgs.size() && channel.isOpen(); i++) {
-			string = strings.get(i);
-			String response = this.generateResponse(string.toUpperCase());
-			if(response != null) {
-				channel.write(response).addListener(new ChannelFutureListener() {
-					public void operationComplete(ChannelFuture future) throws Exception {
-						channel.close();
-					}
-				});
-			} else {
-				channel.close();
-			}
+		String response = this.generateResponse(string.toUpperCase());
+		if(response != null) {
+			channel.write(response).addListener(new ChannelFutureListener() {
+				public void operationComplete(ChannelFuture future) throws Exception {
+					channel.close();
+				}
+			});
+		} else {
+			channel.close();
 		}
-		strings.releaseAllAndRecycle();
 	}
 
 	private String generateResponse(String request) {
