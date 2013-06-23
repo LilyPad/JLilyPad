@@ -5,8 +5,7 @@ import java.net.InetSocketAddress;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.MessageList;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.ReadTimeoutException;
 import lilypad.server.proxy.packet.CraftPacketConstants;
 import lilypad.packet.common.Packet;
@@ -15,7 +14,7 @@ import lilypad.server.proxy.packet.impl.HandshakePacket;
 import lilypad.server.proxy.packet.impl.StatusPacket;
 import lilypad.server.common.IServer;
 
-public class ProxyOutboundHandler extends ChannelInboundHandlerAdapter {
+public class ProxyOutboundHandler extends SimpleChannelInboundHandler<Packet> {
 
 	private IServer server;
 	private ProxySession proxySession;
@@ -54,51 +53,45 @@ public class ProxyOutboundHandler extends ChannelInboundHandlerAdapter {
 			this.state = LoginState.DISCONNECTED;
 		}
 	}
-
+	
 	@Override
-	public void messageReceived(ChannelHandlerContext context, MessageList<Object> msgs) throws Exception {
+	protected void messageReceived(ChannelHandlerContext context, Packet packet) throws Exception {
 		Channel channel = context.channel();
 		if(this.proxySession == null || !this.proxySession.isInboundConnected()) {
 			channel.close();
 			return;
 		}
-		MessageList<Packet> packets = msgs.cast();
-		Packet packet;
-		for(int i = 0; i < msgs.size() && channel.isOpen(); i++) {
-			packet = packets.get(i);
-			switch(this.state) {
-			case ENCRYPT_REQUEST:
-				if(packet.getOpcode() == EncryptRequestPacket.opcode) {
-					EncryptRequestPacket encryptRequestPacket = (EncryptRequestPacket) packet;
-					if(!encryptRequestPacket.getServerKey().equals("-")) {
-						this.proxySession.kickIfInitializing("Error: Protocol Mismatch (0x04)");
-						channel.close();
-						return;
-					}
-					this.state = LoginState.INITIALIZE;
-					this.proxySession.setRedirecting(true);
-					channel.write(new StatusPacket(0));
-				} else {
-					this.proxySession.kickIfInitializing("Error: Protocol Mismatch (0x05)");
+		switch(this.state) {
+		case ENCRYPT_REQUEST:
+			if(packet.getOpcode() == EncryptRequestPacket.opcode) {
+				EncryptRequestPacket encryptRequestPacket = (EncryptRequestPacket) packet;
+				if(!encryptRequestPacket.getServerKey().equals("-")) {
+					this.proxySession.kickIfInitializing("Error: Protocol Mismatch (0x04)");
 					channel.close();
+					return;
 				}
-				break;
-			case INITIALIZE:
-				if(packet.getOpcode() == 0x0D) {
-					this.state = LoginState.CONNECTED;
-					this.proxySession.setOutboundChannel(this.server, channel);
-				}
-			case CONNECTED:
-				this.proxySession.outboundReceived(channel, packet);
-				if(packet.getOpcode() == 0xFF) {
-					this.state = LoginState.DISCONNECTED;
-				}
-				break;
-			default:
-				break;
+				this.state = LoginState.INITIALIZE;
+				this.proxySession.setRedirecting(true);
+				channel.write(new StatusPacket(0));
+			} else {
+				this.proxySession.kickIfInitializing("Error: Protocol Mismatch (0x05)");
+				channel.close();
 			}
+			break;
+		case INITIALIZE:
+			if(packet.getOpcode() == 0x0D) {
+				this.state = LoginState.CONNECTED;
+				this.proxySession.setOutboundChannel(this.server, channel);
+			}
+		case CONNECTED:
+			this.proxySession.outboundReceived(channel, packet);
+			if(packet.getOpcode() == 0xFF) {
+				this.state = LoginState.DISCONNECTED;
+			}
+			break;
+		default:
+			break;
 		}
-		packets.releaseAllAndRecycle();
 	}
 
 	@Override

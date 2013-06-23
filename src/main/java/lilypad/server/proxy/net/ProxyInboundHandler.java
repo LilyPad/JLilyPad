@@ -20,13 +20,12 @@ import lilypad.server.proxy.packet.impl.HandshakePacket;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.MessageList;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.util.AttributeKey;
 
 @Sharable
-public class ProxyInboundHandler extends ChannelInboundHandlerAdapter {
+public class ProxyInboundHandler extends SimpleChannelInboundHandler<Packet> {
 
 	private static final AttributeKey<ProxySession> proxySessionKey = new AttributeKey<ProxySession>("proxySession");
 	private Map<String, Long> antiflood = new HashMap<String, Long>();
@@ -65,87 +64,81 @@ public class ProxyInboundHandler extends ChannelInboundHandlerAdapter {
 	}
 
 	@Override
-	public void messageReceived(ChannelHandlerContext context, MessageList<Object> msgs) throws Exception {
+	protected void messageReceived(ChannelHandlerContext context, Packet packet) throws Exception {
 		final ProxySession proxySession = context.attr(proxySessionKey).get();
 		if(proxySession == null) {
 			context.close();
 			return;
 		}
-		MessageList<Packet> packets = msgs.cast();
-		Packet packet;
-		for(int i = 0; i < msgs.size() && context.channel().isOpen(); i++) {
-			packet = packets.get(i);
-			switch(proxySession.getState()) {
-			case DISCONNECTED:
-				if(packet.getOpcode() == HandshakePacket.opcode) {
-					HandshakePacket handshakePacket = (HandshakePacket) packet;
-					if(handshakePacket.getProtocolVersion() > CraftPacketConstants.protocolVersion) {
-						proxySession.kick("Error: Server Outdated");
-						return;
-					} else if(handshakePacket.getProtocolVersion() < CraftPacketConstants.protocolVersion) {
-						proxySession.kick("Error: Client Outdated");
-						return;
-					}
-					proxySession.setUsername(handshakePacket.getUsername());
-					proxySession.setServerHost(handshakePacket.getServerHost());
-					proxySession.setState(LoginState.ENCRYPT_REQUEST);
-					proxySession.getInboundChannel().write(new EncryptRequestPacket(proxySession.genServerKey(), this.config.proxy_getKeyPair().getPublic(), proxySession.genServerVerification()));
-					this.antiflood.remove(this.getAddress(context.channel()));
-				} else if(packet.getOpcode() == 0xFE) {
-					IPlayerCallback playerCallback = this.config.proxy_getPlayerCallback();
-					int playerCount;
-					int playerMaximum;
-					if(playerCallback != null) {
-						playerCount = playerCallback.getPlayerCount();
-						playerMaximum = playerCallback.getPlayerMaximum();
-					} else {
-						playerCount = this.sessionMapper.getAuthenticatedSize();
-						playerMaximum = this.config.proxy_getPlayerMaximum();
-					}
-					proxySession.kick(CraftPacketConstants.magic + "1\0"
-							+ CraftPacketConstants.protocolVersion + '\0'
-							+ CraftPacketConstants.minecraftVersion + '\0'
-							+ CraftPacketConstants.colorize(this.config.proxy_getPlayerMotd()) + '\0'					
-							+ playerCount + '\0'
-							+ playerMaximum);
-					this.antiflood.remove(this.getAddress(context.channel()));
-				} else {
-					proxySession.kick("Error: Protocol Mismatch (0x01))");
+		switch(proxySession.getState()) {
+		case DISCONNECTED:
+			if(packet.getOpcode() == HandshakePacket.opcode) {
+				HandshakePacket handshakePacket = (HandshakePacket) packet;
+				if(handshakePacket.getProtocolVersion() > CraftPacketConstants.protocolVersion) {
+					proxySession.kick("Error: Server Outdated");
+					return;
+				} else if(handshakePacket.getProtocolVersion() < CraftPacketConstants.protocolVersion) {
+					proxySession.kick("Error: Client Outdated");
+					return;
 				}
-				break;
-			case ENCRYPT_REQUEST:
-				if(packet.getOpcode() == EncryptResponsePacket.opcode) {
-					EncryptResponsePacket encryptResponsePacket = (EncryptResponsePacket) packet;
-					Cipher cipher = Cipher.getInstance("RSA");
-					cipher.init(Cipher.DECRYPT_MODE, this.config.proxy_getKeyPair().getPrivate());
-					byte[] serverVerification = cipher.doFinal(encryptResponsePacket.getServerVerification());
-					byte[] sharedSecret = cipher.doFinal(encryptResponsePacket.getSharedSecret());
-					if(!Arrays.equals(serverVerification, proxySession.getServerVerification())) {
-						proxySession.kick("Error: Protocol Mismatch (0x02)");
-						return;
-					}
-					proxySession.setSharedSecret(sharedSecret);
-					proxySession.setState(LoginState.AUTHENTICATE);
-					this.authExecutorService.execute(new Runnable() {
-						public void run() {
-							proxySession.inboundAuthenticate();
-						}
-					});
-					proxySession.getInboundChannel().pipeline().addFirst(new AESDecoder(proxySession.getSharedSecret()));
+				proxySession.setUsername(handshakePacket.getUsername());
+				proxySession.setServerHost(handshakePacket.getServerHost());
+				proxySession.setState(LoginState.ENCRYPT_REQUEST);
+				proxySession.getInboundChannel().write(new EncryptRequestPacket(proxySession.genServerKey(), this.config.proxy_getKeyPair().getPublic(), proxySession.genServerVerification()));
+				this.antiflood.remove(this.getAddress(context.channel()));
+			} else if(packet.getOpcode() == 0xFE) {
+				IPlayerCallback playerCallback = this.config.proxy_getPlayerCallback();
+				int playerCount;
+				int playerMaximum;
+				if(playerCallback != null) {
+					playerCount = playerCallback.getPlayerCount();
+					playerMaximum = playerCallback.getPlayerMaximum();
 				} else {
-					proxySession.kick("Error: Protocol Mismatch (0x03)");
+					playerCount = this.sessionMapper.getAuthenticatedSize();
+					playerMaximum = this.config.proxy_getPlayerMaximum();
 				}
-				break;
-			case CONNECTED:
-				proxySession.inboundReceived(packet);
-				break;
-			default:
-				break;
+				proxySession.kick(CraftPacketConstants.magic + "1\0"
+						+ CraftPacketConstants.protocolVersion + '\0'
+						+ CraftPacketConstants.minecraftVersion + '\0'
+						+ CraftPacketConstants.colorize(this.config.proxy_getPlayerMotd()) + '\0'					
+						+ playerCount + '\0'
+						+ playerMaximum);
+				this.antiflood.remove(this.getAddress(context.channel()));
+			} else {
+				proxySession.kick("Error: Protocol Mismatch (0x01))");
 			}
+			break;
+		case ENCRYPT_REQUEST:
+			if(packet.getOpcode() == EncryptResponsePacket.opcode) {
+				EncryptResponsePacket encryptResponsePacket = (EncryptResponsePacket) packet;
+				Cipher cipher = Cipher.getInstance("RSA");
+				cipher.init(Cipher.DECRYPT_MODE, this.config.proxy_getKeyPair().getPrivate());
+				byte[] serverVerification = cipher.doFinal(encryptResponsePacket.getServerVerification());
+				byte[] sharedSecret = cipher.doFinal(encryptResponsePacket.getSharedSecret());
+				if(!Arrays.equals(serverVerification, proxySession.getServerVerification())) {
+					proxySession.kick("Error: Protocol Mismatch (0x02)");
+					return;
+				}
+				proxySession.setSharedSecret(sharedSecret);
+				proxySession.setState(LoginState.AUTHENTICATE);
+				this.authExecutorService.execute(new Runnable() {
+					public void run() {
+						proxySession.inboundAuthenticate();
+					}
+				});
+				proxySession.getInboundChannel().pipeline().addFirst(new AESDecoder(proxySession.getSharedSecret()));
+			} else {
+				proxySession.kick("Error: Protocol Mismatch (0x03)");
+			}
+			break;
+		case CONNECTED:
+			proxySession.inboundReceived(packet);
+			break;
+		default:
+			break;
 		}
-		packets.releaseAllAndRecycle();
 	}
-
+	
 	@Override
 	public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
 		Channel channel = context.channel();
