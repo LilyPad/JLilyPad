@@ -15,6 +15,7 @@ public class GenericPacketUnitArray {
 		ENTITY_META_DATA,
 		MAP_DATA,
 		TEAM_DATA,
+		WINDOW_DATA,
 		OPTIONAL_MOTION,
 		ITEM,
 		ITEM_ARRAY;
@@ -55,6 +56,7 @@ public class GenericPacketUnitArray {
 	public static OpPair entityMetaData = new OpPair(Op.ENTITY_META_DATA);
 	public static OpPair mapData = new OpPair(Op.MAP_DATA);
 	public static OpPair teamData = new OpPair(Op.TEAM_DATA);
+	public static OpPair windowData = new OpPair(Op.WINDOW_DATA);
 	public static OpPair optionalMotion = new OpPair(Op.OPTIONAL_MOTION);
 	public static OpPair item = new OpPair(Op.ITEM);
 	public static OpPair itemArray = new OpPair(Op.ITEM_ARRAY);
@@ -70,7 +72,7 @@ public class GenericPacketUnitArray {
 		opPairs[0x05] = new OpPair[] { jump(4 + 2), item };
 		opPairs[0x06] = new OpPair[] { jump(4 + 4 + 4) };
 		opPairs[0x07] = new OpPair[] { jump(4 + 4 + 1) };
-		opPairs[0x08] = new OpPair[] { jump(2 + 2 + 4) };
+		opPairs[0x08] = new OpPair[] { jump(4 + 2 + 4) };
 		opPairs[0x09] = new OpPair[] { jump(4 + 1 + 1 + 2), shortSizedDoubled }; // has another codec
 		opPairs[0x0A] = new OpPair[] { jump(1) };
 		opPairs[0x0B] = new OpPair[] { jump(8 + 8 + 8 + 8 + 1) };
@@ -81,13 +83,14 @@ public class GenericPacketUnitArray {
 		opPairs[0x10] = new OpPair[] { jump(2) };
 		opPairs[0x11] = new OpPair[] { jump(4 + 1 + 4 + 1 + 4) };
 		opPairs[0x12] = new OpPair[] { jump(4 + 1) };
-		opPairs[0x13] = new OpPair[] { jump(4 + 1) };
+		opPairs[0x13] = new OpPair[] { jump(4 + 1 + 4) };
 		opPairs[0x14] = new OpPair[] { jump(4), shortSizedDoubled, jump(4 + 4 + 4 + 1 + 1 + 2), entityMetaData };
 		opPairs[0x16] = new OpPair[] { jump(4 + 4) };
 		opPairs[0x17] = new OpPair[] { jump(4 + 1 + 4 + 4 + 4 + 1 + 1), optionalMotion };
 		opPairs[0x18] = new OpPair[] { jump(4 + 1 + 4 + 4 + 4 + 1 + 1 + 1 + 2 + 2 + 2), entityMetaData };
 		opPairs[0x19] = new OpPair[] { jump(4), shortSizedDoubled, jump(4 + 4 + 4 + 4) };
 		opPairs[0x1A] = new OpPair[] { jump(4 + 4 + 4 + 4 + 2) };
+		opPairs[0x1B] = new OpPair[] { jump(4 + 4 + 1 + 1) };
 		opPairs[0x1C] = new OpPair[] { jump(4 + 2 + 2 + 2) };
 		opPairs[0x1D] = new OpPair[] { byteSizedQuad };
 		opPairs[0x1E] = new OpPair[] { jump(4) };
@@ -97,11 +100,12 @@ public class GenericPacketUnitArray {
 		opPairs[0x22] = new OpPair[] { jump(4 + 4 + 4 + 4 + 1 + 1) };
 		opPairs[0x23] = new OpPair[] { jump(4 + 1) };
 		opPairs[0x26] = new OpPair[] { jump(4 + 1) };
-		opPairs[0x27] = new OpPair[] { jump(4 + 4) };
+		opPairs[0x27] = new OpPair[] { jump(4 + 4 + 1) };
 		opPairs[0x28] = new OpPair[] { jump(4), entityMetaData };
 		opPairs[0x29] = new OpPair[] { jump(4 + 1 + 1 + 2) };
 		opPairs[0x2A] = new OpPair[] { jump(4 + 1) };
 		opPairs[0x2B] = new OpPair[] { jump(4 + 2 + 2) };
+		opPairs[0x2C] = new OpPair[] { jump(4 + 4), shortSizedDoubled, jump(8) };
 		opPairs[0x33] = new OpPair[] { jump(4 + 4 + 1 + 2 + 2), intSized };
 		opPairs[0x34] = new OpPair[] { jump(4 + 4 + 2), intSized };
 		opPairs[0x35] = new OpPair[] { jump(4 + 1 + 4 + 2 + 1) };
@@ -114,7 +118,7 @@ public class GenericPacketUnitArray {
 		opPairs[0x3F] = new OpPair[] { shortSizedDoubled, jump(4 + 4 + 4 + 4 + 4 + 4 + 4 + 4)};
 		opPairs[0x46] = new OpPair[] { jump(1 + 1) };
 		opPairs[0x47] = new OpPair[] { jump(4 + 1 + 4 + 4 + 4) };
-		opPairs[0x64] = new OpPair[] { jump(1 + 1), shortSizedDoubled, jump(1 + 1) };
+		opPairs[0x64] = new OpPair[] { jump(1), windowData };
 		opPairs[0x65] = new OpPair[] { jump(1) };
 		opPairs[0x66] = new OpPair[] { jump(1 + 2 + 1 + 2 + 1), item };
 		opPairs[0x67] = new OpPair[] { jump(1 + 2), item };
@@ -126,9 +130,9 @@ public class GenericPacketUnitArray {
 		opPairs[0x82] = new OpPair[] { jump(4 + 2 + 4), shortSizedDoubled, shortSizedDoubled, shortSizedDoubled, shortSizedDoubled };
 		opPairs[0x83] = new OpPair[] { jump(2 + 2), shortSized };
 		opPairs[0x84] = new OpPair[] { jump(4 + 2 + 4 + 1), shortSized };
-		opPairs[0xC8] = new OpPair[] { jump(4 + 1) };
+		opPairs[0xC8] = new OpPair[] { jump(4 + 4) };
 		opPairs[0xC9] = new OpPair[] { shortSizedDoubled, jump(1 + 2) }; // has another codec
-		opPairs[0xCA] = new OpPair[] { jump(1 + 1 + 1) };
+		opPairs[0xCA] = new OpPair[] { jump(1 + 4 + 4) };
 		opPairs[0xCB] = new OpPair[] { shortSizedDoubled };
 		opPairs[0xCC] = new OpPair[] { shortSizedDoubled, jump(4) };
 		opPairs[0xCD] = new OpPair[] { jump(1) }; // has another codec

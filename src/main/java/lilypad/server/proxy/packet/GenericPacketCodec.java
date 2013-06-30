@@ -130,6 +130,15 @@ public class GenericPacketCodec extends PacketCodec<GenericPacket> {
 					}
 				}
 				break;
+			case WINDOW_DATA:
+				a = buffer.getUnsignedByte(position);
+				position += 1;
+				b = buffer.getUnsignedShort(position);
+				position += (b * 2) + 2 + 1 + 1;
+				if(a == 11) {
+					position += 4;
+				}
+				break;
 			case OPTIONAL_MOTION:
 				a = buffer.getInt(position);
 				if(a > 0) {

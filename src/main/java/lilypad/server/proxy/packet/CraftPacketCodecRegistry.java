@@ -18,6 +18,9 @@ public class CraftPacketCodecRegistry extends PacketCodecRegistry {
 	
 	private CraftPacketCodecRegistry() {
 		for(int i = 0; i < 256; i++) {
+			if(GenericPacketUnitArray.opPairs[i] == null) {
+				continue;
+			}
 			super.submit(new GenericPacketCodec(i));
 		}
 		super.submit(new LoginPacketCodec());
