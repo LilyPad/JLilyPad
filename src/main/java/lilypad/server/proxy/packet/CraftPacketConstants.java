@@ -33,6 +33,7 @@ public class CraftPacketConstants {
 		entityIdPositions[0x28] = new int[] {0};
 		entityIdPositions[0x29] = new int[] {0};
 		entityIdPositions[0x2A] = new int[] {0};
+		entityIdPositions[0x2C] = new int[] {0};
 		entityIdPositions[0x37] = new int[] {0};
 		entityIdPositions[0x47] = new int[] {0};
 	}
