@@ -18,7 +18,8 @@ public class GenericPacketUnitArray {
 		WINDOW_DATA,
 		OPTIONAL_MOTION,
 		ITEM,
-		ITEM_ARRAY;
+		ITEM_ARRAY,
+		ENTITY_PROPERTIES;
 	}
 	
 	public static class OpPair {
@@ -60,6 +61,7 @@ public class GenericPacketUnitArray {
 	public static OpPair optionalMotion = new OpPair(Op.OPTIONAL_MOTION);
 	public static OpPair item = new OpPair(Op.ITEM);
 	public static OpPair itemArray = new OpPair(Op.ITEM_ARRAY);
+	public static OpPair entityProperties = new OpPair(Op.ENTITY_PROPERTIES);
 	
 	public static OpPair[][] opPairs = new OpPair[256][];
 	
@@ -105,7 +107,7 @@ public class GenericPacketUnitArray {
 		opPairs[0x29] = new OpPair[] { jump(4 + 1 + 1 + 2) };
 		opPairs[0x2A] = new OpPair[] { jump(4 + 1) };
 		opPairs[0x2B] = new OpPair[] { jump(4 + 2 + 2) };
-		opPairs[0x2C] = new OpPair[] { jump(4 + 4), shortSizedDoubled, jump(8) };
+		opPairs[0x2C] = new OpPair[] { jump(4), entityProperties };
 		opPairs[0x33] = new OpPair[] { jump(4 + 4 + 1 + 2 + 2), intSized };
 		opPairs[0x34] = new OpPair[] { jump(4 + 4 + 2), intSized };
 		opPairs[0x35] = new OpPair[] { jump(4 + 1 + 4 + 2 + 1) };

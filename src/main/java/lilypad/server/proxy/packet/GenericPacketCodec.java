@@ -179,6 +179,14 @@ public class GenericPacketCodec extends PacketCodec<GenericPacket> {
 					}
 				}
 				break;
+			case ENTITY_PROPERTIES:
+				a = buffer.getInt(position);
+				position += 4;
+				for(b = 0; b < a; b++) {
+					c = buffer.getShort(position);
+					position += (2 * c) + 2 + 8;
+				}
+				break;
 			}
 			if(position - start > CraftPacketConstants.maxPacketSize) {
 				throw new Exception("Max packet size passed, dropping");
