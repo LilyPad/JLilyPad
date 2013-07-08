@@ -21,6 +21,7 @@ public class GenericPacketCodec extends PacketCodec<GenericPacket> {
 		int b;
 		int c;
 		int d;
+		int e;
 		for(OpPair opPair : opPairs) {
 			switch(opPair.getOperation()) {
 			case JUMP_FIXED:
@@ -186,7 +187,7 @@ public class GenericPacketCodec extends PacketCodec<GenericPacket> {
 					c = buffer.getShort(position);
 					position += (2 * c) + 2 + 8;
 					d = buffer.getShort(position);
-					position += d * (8 + 8 + 8 + 1);
+					position += (d * (8 + 8 + 8 + 1)) + 2;
 				}
 				break;
 			}
