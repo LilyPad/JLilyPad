@@ -21,7 +21,6 @@ public class GenericPacketCodec extends PacketCodec<GenericPacket> {
 		int b;
 		int c;
 		int d;
-		int e;
 		for(OpPair opPair : opPairs) {
 			switch(opPair.getOperation()) {
 			case JUMP_FIXED:
