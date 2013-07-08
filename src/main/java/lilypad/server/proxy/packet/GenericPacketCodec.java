@@ -185,6 +185,8 @@ public class GenericPacketCodec extends PacketCodec<GenericPacket> {
 				for(b = 0; b < a; b++) {
 					c = buffer.getShort(position);
 					position += (2 * c) + 2 + 8;
+					d = buffer.getShort(position);
+					position += d * (8 + 8 + 8 + 1);
 				}
 				break;
 			}

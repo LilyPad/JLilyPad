@@ -132,6 +132,7 @@ public class GenericPacketUnitArray {
 		opPairs[0x82] = new OpPair[] { jump(4 + 2 + 4), shortSizedDoubled, shortSizedDoubled, shortSizedDoubled, shortSizedDoubled };
 		opPairs[0x83] = new OpPair[] { jump(2 + 2), shortSized };
 		opPairs[0x84] = new OpPair[] { jump(4 + 2 + 4 + 1), shortSized };
+		opPairs[0x85] = new OpPair[] { jump(1 + 4 + 4 + 4) };
 		opPairs[0xC8] = new OpPair[] { jump(4 + 4) };
 		opPairs[0xC9] = new OpPair[] { shortSizedDoubled, jump(1 + 2) }; // has another codec
 		opPairs[0xCA] = new OpPair[] { jump(1 + 4 + 4) };
