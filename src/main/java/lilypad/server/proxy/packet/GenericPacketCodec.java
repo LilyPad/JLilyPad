@@ -142,7 +142,7 @@ public class GenericPacketCodec extends PacketCodec<GenericPacket> {
 			case SCOREBOARD_DATA:
 				a = buffer.getByte(position);
 				position += 1;
-				if(a > 0) {
+				if(a != -1) {
 					b = buffer.getUnsignedShort(position);
 					position += (b * 2) + 2 + 4;
 				}
