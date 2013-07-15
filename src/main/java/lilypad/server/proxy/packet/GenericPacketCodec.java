@@ -139,6 +139,14 @@ public class GenericPacketCodec extends PacketCodec<GenericPacket> {
 					position += 4;
 				}
 				break;
+			case SCOREBOARD_DATA:
+				a = buffer.getByte(position);
+				position += 1;
+				if(a > 0) {
+					b = buffer.getUnsignedShort(position);
+					position += (b * 2) + 2 + 4;
+				}
+				break;
 			case OPTIONAL_MOTION:
 				a = buffer.getInt(position);
 				if(a > 0) {

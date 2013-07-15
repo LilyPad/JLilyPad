@@ -16,6 +16,7 @@ public class GenericPacketUnitArray {
 		MAP_DATA,
 		TEAM_DATA,
 		WINDOW_DATA,
+		SCOREBOARD_DATA,
 		OPTIONAL_MOTION,
 		ITEM,
 		ITEM_ARRAY,
@@ -58,6 +59,7 @@ public class GenericPacketUnitArray {
 	public static OpPair mapData = new OpPair(Op.MAP_DATA);
 	public static OpPair teamData = new OpPair(Op.TEAM_DATA);
 	public static OpPair windowData = new OpPair(Op.WINDOW_DATA);
+	public static OpPair scoreboardData = new OpPair(Op.SCOREBOARD_DATA);
 	public static OpPair optionalMotion = new OpPair(Op.OPTIONAL_MOTION);
 	public static OpPair item = new OpPair(Op.ITEM);
 	public static OpPair itemArray = new OpPair(Op.ITEM_ARRAY);
@@ -140,7 +142,7 @@ public class GenericPacketUnitArray {
 		opPairs[0xCC] = new OpPair[] { shortSizedDoubled, jump(4) };
 		opPairs[0xCD] = new OpPair[] { jump(1) }; // has another codec
 		opPairs[0xCE] = new OpPair[] { shortSizedDoubled, shortSizedDoubled, jump(1)}; // has another codec
-		opPairs[0xCF] = new OpPair[] { shortSizedDoubled, jump(1), shortSizedDoubled, jump(4)};
+		opPairs[0xCF] = new OpPair[] { shortSizedDoubled, scoreboardData};
 		opPairs[0xD0] = new OpPair[] { jump(1), shortSizedDoubled};
 		opPairs[0xD1] = new OpPair[] { shortSizedDoubled, teamData};
 		opPairs[0xFA] = new OpPair[] { shortSizedDoubled, shortSized };
