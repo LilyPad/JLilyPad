@@ -31,7 +31,7 @@ public class ConnectNetworkHandler extends SimpleChannelInboundHandler<Packet> {
 	protected void channelRead0(ChannelHandlerContext context, Packet packet) throws Exception {
 		switch(packet.getOpcode()) {
 		case 0x00:
-			context.write(packet);
+			context.writeAndFlush(packet);
 			break;
 		case 0x02:
 			ResultPacket resultPacket = (ResultPacket) packet;

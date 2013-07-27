@@ -138,7 +138,7 @@ public class ConnectImpl implements Connect {
 		}
 		ByteBuf payload = Unpooled.buffer();
 		requestEncoder.encode(request, payload);
-		this.channel.write(new RequestPacket(futureId, requestEncoder.getId(), payload));
+		this.channel.writeAndFlush(new RequestPacket(futureId, requestEncoder.getId(), payload));
 		this.pendingFutures.put(futureId, futureResult);
 		return futureResult;
 	}
