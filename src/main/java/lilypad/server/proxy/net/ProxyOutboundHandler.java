@@ -55,7 +55,7 @@ public class ProxyOutboundHandler extends SimpleChannelInboundHandler<Packet> {
 	}
 	
 	@Override
-	protected void messageReceived(ChannelHandlerContext context, Packet packet) throws Exception {
+	protected void channelRead0(ChannelHandlerContext context, Packet packet) throws Exception {
 		Channel channel = context.channel();
 		if(this.proxySession == null || !this.proxySession.isInboundConnected()) {
 			channel.close();

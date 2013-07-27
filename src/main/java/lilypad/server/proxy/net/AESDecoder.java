@@ -1,5 +1,7 @@
 package lilypad.server.proxy.net;
 
+import java.util.List;
+
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.engines.AESFastEngine;
 import org.bouncycastle.crypto.modes.CFBBlockCipher;
@@ -9,7 +11,6 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.MessageList;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
 public class AESDecoder extends ByteToMessageDecoder {
@@ -26,7 +27,7 @@ public class AESDecoder extends ByteToMessageDecoder {
 		this.decoderOut = new byte[this.aesCipherDecoder.getOutputSize(bufferSize)];
 	}
 
-	protected void decode(ChannelHandlerContext context, ByteBuf in, MessageList<Object> out) throws Exception {
+	protected void decode(ChannelHandlerContext context, ByteBuf in, List<Object> out) throws Exception {
 		ByteBuf buffer = Unpooled.buffer(this.aesCipherDecoder.getOutputSize(in.readableBytes()));
 		int read;
 		while(in.isReadable()) {
