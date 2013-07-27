@@ -35,7 +35,7 @@ public class ProxyOutboundHandler extends SimpleChannelInboundHandler<Packet> {
 		InetSocketAddress inboundAddress = this.proxySession.getInboundAddress();
 		InetSocketAddress outboundAddress = (InetSocketAddress) channel.remoteAddress();
 		this.state = LoginState.ENCRYPT_REQUEST;
-		channel.write(new HandshakePacket(CraftPacketConstants.protocolVersion, this.proxySession.getUsername(), server.getSecurityKey() + ";" + inboundAddress.getAddress().getHostAddress() + ";" + inboundAddress.getPort(), outboundAddress.getPort()));
+		channel.writeAndFlush(new HandshakePacket(CraftPacketConstants.protocolVersion, this.proxySession.getUsername(), server.getSecurityKey() + ";" + inboundAddress.getAddress().getHostAddress() + ";" + inboundAddress.getPort(), outboundAddress.getPort()));
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class ProxyOutboundHandler extends SimpleChannelInboundHandler<Packet> {
 				}
 				this.state = LoginState.INITIALIZE;
 				this.proxySession.setRedirecting(true);
-				channel.write(new StatusPacket(0));
+				channel.writeAndFlush(new StatusPacket(0));
 			} else {
 				this.proxySession.kickIfInitializing("Error: Protocol Mismatch (0x05)");
 				channel.close();

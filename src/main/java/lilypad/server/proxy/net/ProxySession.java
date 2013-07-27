@@ -175,7 +175,7 @@ public class ProxySession {
 		if(packet instanceof GenericPacket) {
 			((GenericPacket) packet).swapEntityId(this.clientEntityId, this.serverEntityId);
 		}
-		this.outboundChannel.write(packet);
+		this.outboundChannel.writeAndFlush(packet);
 	}
 
 	public void outboundDisconnected(Channel channel) {
@@ -218,6 +218,7 @@ public class ProxySession {
 					this.inboundChannel.write(new TeamPacket(teams.next(), (byte) 1, null));
 					teams.remove();
 				}
+				this.inboundChannel.flush();
 				return;
 			}
 			break;
@@ -286,7 +287,7 @@ public class ProxySession {
 		if(!this.isInboundConnected()) {
 			return;
 		}
-		this.inboundChannel.write(new KickPacket(message)).addListener(new ChannelFutureListener() {
+		this.inboundChannel.writeAndFlush(new KickPacket(message)).addListener(new ChannelFutureListener() {
 			public void operationComplete(ChannelFuture future) throws Exception {
 				if(!isInboundConnected()) {
 					return;

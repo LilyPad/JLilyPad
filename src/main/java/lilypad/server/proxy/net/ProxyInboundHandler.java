@@ -84,7 +84,7 @@ public class ProxyInboundHandler extends SimpleChannelInboundHandler<Packet> {
 				proxySession.setUsername(handshakePacket.getUsername());
 				proxySession.setServerHost(handshakePacket.getServerHost());
 				proxySession.setState(LoginState.ENCRYPT_REQUEST);
-				proxySession.getInboundChannel().write(new EncryptRequestPacket(proxySession.genServerKey(), this.config.proxy_getKeyPair().getPublic(), proxySession.genServerVerification()));
+				proxySession.getInboundChannel().writeAndFlush(new EncryptRequestPacket(proxySession.genServerKey(), this.config.proxy_getKeyPair().getPublic(), proxySession.genServerVerification()));
 				this.antiflood.remove(this.getAddress(context.channel()));
 			} else if(packet.getOpcode() == 0xFE) {
 				IPlayerCallback playerCallback = this.config.proxy_getPlayerCallback();
