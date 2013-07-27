@@ -256,7 +256,7 @@ public class ProxySession {
 			}
 			break;
 		}
-		this.inboundChannel.write(packet);
+		this.inboundChannel.writeAndFlush(packet);
 	}
 
 	public void redirect(final IServer server) { 
