@@ -1,5 +1,6 @@
 package lilypad.packet.connect;
 
+
 public class ConnectPacketConstants {
 
 	public static final int statusInvalidRole = 0x02;
