@@ -172,7 +172,7 @@ public class NodeSession implements IServer {
 	public String getIdentification() {
 		switch(this.role) {
 		case AUTHENTICATED:
-			return this.username + "." + this.channel.id();
+			return this.username + "." + this.channel.hashCode();
 		case SERVER:
 		case PROXY:
 			return this.username;

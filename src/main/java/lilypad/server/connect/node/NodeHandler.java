@@ -41,7 +41,7 @@ public class NodeHandler extends SimpleChannelInboundHandler<Packet> {
 	}
 	
 	@Override
-	protected void messageReceived(ChannelHandlerContext context, Packet packet) throws Exception {
+	protected void channelRead0(ChannelHandlerContext context, Packet packet) throws Exception {
 		switch(packet.getOpcode()) {
 		case 0x00:
 			KeepalivePacket keepalivePacket = (KeepalivePacket) packet;
