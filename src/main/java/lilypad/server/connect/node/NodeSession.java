@@ -98,7 +98,7 @@ public class NodeSession implements IServer {
 		if(this.channel == null) {
 			return;
 		}
-		this.channel.write(packet);
+		this.channel.writeAndFlush(packet);
 	}
 
 	public void ping(int random) {
