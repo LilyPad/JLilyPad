@@ -23,7 +23,7 @@ public class QueryTcpHandler extends SimpleChannelInboundHandler<String> {
 	}
 	
 	@Override
-	protected void messageReceived(ChannelHandlerContext context, String string) throws Exception {
+	protected void channelRead0(ChannelHandlerContext context, String string) throws Exception {
 		final Channel channel = context.channel();
 		String response = this.generateResponse(string.toUpperCase());
 		if(response != null) {

@@ -25,7 +25,7 @@ public class QueryUdpHandler extends SimpleChannelInboundHandler<DatagramPacket>
 	}
 	
 	@Override
-	protected void messageReceived(ChannelHandlerContext context, DatagramPacket packet) throws Exception {
+	protected void channelRead0(ChannelHandlerContext context, DatagramPacket packet) throws Exception {
 		ByteBuf buffer = packet.content();
 		if(buffer.readableBytes() < 3) {
 			return;
