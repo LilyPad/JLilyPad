@@ -88,7 +88,7 @@ public class QueryUdpHandler extends SimpleChannelInboundHandler<DatagramPacket>
 				response.writeShort(Short.reverseBytes((short) this.playable.getBindAddress().getPort()));
 				response.writeBytes(this.playable.getBindAddress().getHostName().getBytes()); response.writeByte(0x00);
 			}
-			context.write(new DatagramPacket(response, packet.sender()));
+			context.writeAndFlush(new DatagramPacket(response, packet.sender()));
 			break;
 		case 9:
 			QueryUdpIdentification identification = new QueryUdpIdentification(requestId);
@@ -97,7 +97,7 @@ public class QueryUdpHandler extends SimpleChannelInboundHandler<DatagramPacket>
 			response.writeByte(0x09);
 			response.writeInt(identification.getRequestId());
 			response.writeBytes(Integer.toString(identification.getChallenge()).getBytes()); response.writeByte(0x00);
-			context.write(new DatagramPacket(response, packet.sender()));
+			context.writeAndFlush(new DatagramPacket(response, packet.sender()));
 			break;
 		}
 	}

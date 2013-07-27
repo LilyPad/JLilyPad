@@ -27,7 +27,7 @@ public class QueryTcpHandler extends SimpleChannelInboundHandler<String> {
 		final Channel channel = context.channel();
 		String response = this.generateResponse(string.toUpperCase());
 		if(response != null) {
-			channel.write(response).addListener(new ChannelFutureListener() {
+			channel.writeAndFlush(response).addListener(new ChannelFutureListener() {
 				public void operationComplete(ChannelFuture future) throws Exception {
 					channel.close();
 				}
