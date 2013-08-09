@@ -66,7 +66,7 @@ public class ConnectImpl implements Connect {
 	private boolean closed;
 
 	public ConnectImpl(ConnectSettings connectSettings) {
-		this(connectSettings, "0.0.0.0");
+		this(connectSettings, null);
 	}
 
 	public ConnectImpl(ConnectSettings connectSettings, String inboundIp) {
@@ -78,7 +78,6 @@ public class ConnectImpl implements Connect {
 		this.disconnect();
 		Bootstrap bootstrap = new Bootstrap().group(this.eventGroup = new NioEventLoopGroup())
 				.channel(NioSocketChannel.class)
-				.localAddress(new InetSocketAddress(InetAddress.getByName(this.inboundIp), 0))
 				.handler(new ChannelInitializer<SocketChannel>() {
 					public void initChannel(SocketChannel channel) throws Exception {
 						channel.pipeline().addLast(new ReadTimeoutHandler(10));
@@ -87,6 +86,9 @@ public class ConnectImpl implements Connect {
 						channel.pipeline().addLast(new ConnectNetworkHandler(ConnectImpl.this));
 					}
 		});
+		if(this.inboundIp != null && !this.inboundIp.equals("0.0.0.0")) {
+			bootstrap.localAddress(new InetSocketAddress(InetAddress.getByName(this.inboundIp), 0));
+		}
 		ChannelFuture future = bootstrap.connect(this.settings.getOutboundAddress()).sync();
 		if(!future.isSuccess()) {
 			throw future.cause();
