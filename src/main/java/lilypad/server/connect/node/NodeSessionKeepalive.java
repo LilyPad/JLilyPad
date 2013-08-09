@@ -31,8 +31,12 @@ public class NodeSessionKeepalive implements Runnable {
 		try {
 			Random random = new Random();
 			while(this.thread != null) {
+				int randomInt;
 				for(NodeSession nodeSession : this.nodeSessionMapper.getAuthenticated()) {
-					nodeSession.ping(random.nextInt());
+					do {
+						randomInt = random.nextInt();
+					} while(randomInt == 0);
+					nodeSession.ping(randomInt);
 				}
 				Thread.sleep(5000L);
 			}

@@ -110,7 +110,7 @@ public class NodeSession implements IServer {
 	}
 
 	public void pong(int random) {
-		if(this.ponged != random) {
+		if(this.ponged == 0 || this.ponged != random) {
 			this.channel.close();
 			return;
 		}
