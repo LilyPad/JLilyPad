@@ -9,8 +9,6 @@ import io.netty.handler.timeout.ReadTimeoutHandler;
 
 import java.net.InetSocketAddress;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import lilypad.packet.common.PacketDecoder;
 import lilypad.packet.common.PacketEncoder;
