@@ -25,7 +25,6 @@ import lilypad.server.common.IServer;
 
 public class ProxyService extends Service<ProxyConfig> implements IPlayable {
 	
-	private ExecutorService authExecutorService;
 	private ProxyInboundHandler proxyInboundHandler;
 	private ProxySessionMapper proxySessionMapper;
 	
@@ -37,9 +36,8 @@ public class ProxyService extends Service<ProxyConfig> implements IPlayable {
 	
 	public void enable(ProxyConfig config) throws Exception {
 		this.config = config;
-		this.authExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 		this.proxySessionMapper = new ProxySessionMapper();
-		this.proxyInboundHandler = new ProxyInboundHandler(config, this.proxySessionMapper, this.authExecutorService);
+		this.proxyInboundHandler = new ProxyInboundHandler(config, this.proxySessionMapper);
 		ServerBootstrap serverBootstrap = new ServerBootstrap().group(this.parentEventGroup = new NioEventLoopGroup(), this.childEventGroup = new NioEventLoopGroup())
 				.channel(NioServerSocketChannel.class)
 				.localAddress(config.proxy_getBindAddress())
@@ -69,13 +67,9 @@ public class ProxyService extends Service<ProxyConfig> implements IPlayable {
 			if(this.proxySessionMapper != null) {
 				this.proxySessionMapper.clear();
 			}
-			if(this.authExecutorService != null) {
-				this.authExecutorService.shutdownNow();
-			}
 		} catch(Exception exception) {
 			exception.printStackTrace();
 		} finally {
-			this.authExecutorService = null;
 			this.proxyInboundHandler = null;
 			this.proxySessionMapper = null;
 			this.parentEventGroup = null;

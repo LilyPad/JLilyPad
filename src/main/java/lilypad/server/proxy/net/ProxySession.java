@@ -12,7 +12,7 @@ import lilypad.packet.common.PacketEncoder;
 import lilypad.server.proxy.ProxyConfig;
 import lilypad.server.proxy.http.HttpGetClient;
 import lilypad.server.proxy.http.HttpGetClientListener;
-import lilypad.server.proxy.http.impl.SyncHttpGetClient;
+import lilypad.server.proxy.http.impl.AsyncHttpGetClient;
 import lilypad.server.proxy.packet.CraftPacketCodecRegistry;
 import lilypad.server.proxy.packet.CraftPacketConstants;
 import lilypad.server.proxy.packet.GenericPacket;
@@ -79,7 +79,7 @@ public class ProxySession {
 			exception.printStackTrace();
 			return;
 		}
-		HttpGetClient httpGetClient = new SyncHttpGetClient(uri);
+		HttpGetClient httpGetClient = new AsyncHttpGetClient(uri, this.inboundChannel.eventLoop());
 		httpGetClient.registerListener(new HttpGetClientListener() {
 			public void httpResponse(HttpGetClient httpClient, String response) {
 				if(response.trim().equals("YES")) {

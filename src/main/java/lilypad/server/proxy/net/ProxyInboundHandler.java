@@ -5,7 +5,6 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 
 import javax.crypto.Cipher;
 
@@ -32,12 +31,10 @@ public class ProxyInboundHandler extends SimpleChannelInboundHandler<Packet> {
 
 	private ProxyConfig config;
 	private ProxySessionMapper sessionMapper;
-	private ExecutorService authExecutorService;
 
-	public ProxyInboundHandler(ProxyConfig config, ProxySessionMapper sessionMapper, ExecutorService authExecutorService) {
+	public ProxyInboundHandler(ProxyConfig config, ProxySessionMapper sessionMapper) {
 		this.config = config;
 		this.sessionMapper = sessionMapper;
-		this.authExecutorService = authExecutorService;
 	}
 
 	@Override
@@ -121,12 +118,8 @@ public class ProxyInboundHandler extends SimpleChannelInboundHandler<Packet> {
 				}
 				proxySession.setSharedSecret(sharedSecret);
 				proxySession.setState(LoginState.AUTHENTICATE);
-				this.authExecutorService.execute(new Runnable() {
-					public void run() {
-						proxySession.inboundAuthenticate();
-					}
-				});
 				proxySession.getInboundChannel().pipeline().addFirst(new AESDecoder(proxySession.getSharedSecret()));
+				proxySession.inboundAuthenticate();
 			} else {
 				proxySession.kick("Error: Protocol Mismatch (0x03)");
 			}
