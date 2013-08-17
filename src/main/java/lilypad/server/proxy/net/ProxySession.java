@@ -280,7 +280,7 @@ public class ProxySession {
 	}
 
 	public void redirect(final IServer server) { 
-		Bootstrap bootstrap = new Bootstrap().group(this.inboundChannel.eventLoop())
+		new Bootstrap().group(this.inboundChannel.eventLoop())
 				.channel(NioSocketChannel.class)
 				.localAddress(this.config.proxy_getOutboundAddress())
 				.remoteAddress(server.getInboundAddress())
@@ -292,8 +292,8 @@ public class ProxySession {
 						channel.pipeline().addLast(new PacketDecoder(CraftPacketCodecRegistry.instance));
 						channel.pipeline().addLast(new ProxyOutboundHandler(server, ProxySession.this));
 					}
-				});
-		bootstrap.connect().addListener(new ChannelFutureListener() {
+				})
+				.connect().addListener(new ChannelFutureListener() {
 			public void operationComplete(ChannelFuture future) throws Exception {
 				if(future.isSuccess()) {
 					return;
