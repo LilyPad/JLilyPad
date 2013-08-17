@@ -7,6 +7,8 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import lilypad.server.proxy.http.HttpGetClient;
 import lilypad.server.proxy.http.HttpGetClientListener;
 
@@ -25,6 +27,10 @@ public class SyncHttpGetClient implements HttpGetClient {
 		BufferedReader bufferedReader = null;
 		try {
 			URLConnection urlConnection = this.uri.toURL().openConnection();
+			if(urlConnection instanceof HttpsURLConnection) {
+				HttpsURLConnection httpsURLConnection = (HttpsURLConnection) urlConnection;
+				httpsURLConnection.setSSLSocketFactory(DummyTrustManager.getDummySSLContext().getSocketFactory());
+			}
 			urlConnection.setConnectTimeout((int) timeout);
 			urlConnection.setReadTimeout((int) timeout);
 			urlConnection.connect();
