@@ -12,7 +12,7 @@ import lilypad.packet.common.PacketEncoder;
 import lilypad.server.proxy.ProxyConfig;
 import lilypad.server.proxy.http.HttpGetClient;
 import lilypad.server.proxy.http.HttpGetClientListener;
-import lilypad.server.proxy.http.SyncHttpGetClient;
+import lilypad.server.proxy.http.impl.SyncHttpGetClient;
 import lilypad.server.proxy.packet.CraftPacketCodecRegistry;
 import lilypad.server.proxy.packet.CraftPacketConstants;
 import lilypad.server.proxy.packet.GenericPacket;

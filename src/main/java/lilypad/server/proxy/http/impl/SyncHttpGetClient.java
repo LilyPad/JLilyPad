@@ -1,4 +1,4 @@
-package lilypad.server.proxy.http;
+package lilypad.server.proxy.http.impl;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -6,6 +6,9 @@ import java.net.URI;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
+
+import lilypad.server.proxy.http.HttpGetClient;
+import lilypad.server.proxy.http.HttpGetClientListener;
 
 public class SyncHttpGetClient implements HttpGetClient {
 
