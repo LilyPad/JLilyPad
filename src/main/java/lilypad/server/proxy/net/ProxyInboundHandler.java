@@ -28,7 +28,7 @@ import io.netty.util.AttributeKey;
 public class ProxyInboundHandler extends SimpleChannelInboundHandler<Packet> {
 
 	private static final AttributeKey<ProxySession> proxySessionKey = new AttributeKey<ProxySession>("proxySession");
-	private Map<String, Long> antiflood = new HashMap<String, Long>();
+	private Map<String, Long> throttle = new HashMap<String, Long>();
 
 	private ProxyConfig config;
 	private ProxySessionMapper sessionMapper;
@@ -43,12 +43,12 @@ public class ProxyInboundHandler extends SimpleChannelInboundHandler<Packet> {
 	@Override
 	public void channelActive(ChannelHandlerContext context) throws Exception {
 		String address = this.getAddress(context.channel());
-		if(this.antiflood.containsKey(address) && System.currentTimeMillis() - this.antiflood.get(address) < this.config.proxy_getPlayerThrottle()) {
+		if(this.throttle.containsKey(address) && System.currentTimeMillis() - this.throttle.get(address) < this.config.proxy_getPlayerThrottle()) {
 			context.close();
-			this.antiflood.put(address, System.currentTimeMillis());
+			this.throttle.put(address, System.currentTimeMillis());
 			return;
 		} else {
-			this.antiflood.put(address, System.currentTimeMillis());
+			this.throttle.put(address, System.currentTimeMillis());
 		}
 		context.attr(proxySessionKey).set(new ProxySession(this.config, this.sessionMapper, context.channel()));
 	}
@@ -85,7 +85,7 @@ public class ProxyInboundHandler extends SimpleChannelInboundHandler<Packet> {
 				proxySession.setServerHost(handshakePacket.getServerHost());
 				proxySession.setState(LoginState.ENCRYPT_REQUEST);
 				proxySession.getInboundChannel().writeAndFlush(new EncryptRequestPacket(proxySession.genServerKey(), this.config.proxy_getKeyPair().getPublic(), proxySession.genServerVerification()));
-				this.antiflood.remove(this.getAddress(context.channel()));
+				this.throttle.remove(this.getAddress(context.channel()));
 			} else if(packet.getOpcode() == 0xFE) {
 				IPlayerCallback playerCallback = this.config.proxy_getPlayerCallback();
 				int playerCount;
@@ -103,7 +103,7 @@ public class ProxyInboundHandler extends SimpleChannelInboundHandler<Packet> {
 						+ CraftPacketConstants.colorize(this.config.proxy_getPlayerMotd()) + '\0'					
 						+ playerCount + '\0'
 						+ playerMaximum);
-				this.antiflood.remove(this.getAddress(context.channel()));
+				this.throttle.remove(this.getAddress(context.channel()));
 			} else {
 				proxySession.kick("Error: Protocol Mismatch (0x01))");
 			}

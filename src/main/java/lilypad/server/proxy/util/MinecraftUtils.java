@@ -15,8 +15,8 @@ public class MinecraftUtils {
 		BufferedReader bufferedReader = null;
 		try {
 			URLConnection urlConnection = new URL("http://session.minecraft.net/game/checkserver.jsp?user=" + URLEncoder.encode(username, "UTF-8") + "&serverId=" + URLEncoder.encode(serverKey, "UTF-8")).openConnection();
-			urlConnection.setConnectTimeout(2000);
-			urlConnection.setReadTimeout(2000);
+			urlConnection.setConnectTimeout(2500);
+			urlConnection.setReadTimeout(2500);
 			urlConnection.connect();
 			bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 			String response = bufferedReader.readLine();
@@ -26,6 +26,7 @@ public class MinecraftUtils {
 				return false;
 			}
 		} catch(Exception exception) {
+			System.out.println("Error: Authentication to Minecraft.net failed:");
 			exception.printStackTrace();
 			return false;
 		} finally {

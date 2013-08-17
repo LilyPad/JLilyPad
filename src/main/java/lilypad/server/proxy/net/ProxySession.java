@@ -72,7 +72,6 @@ public class ProxySession {
 			}
 			this.inboundAuthenticate(success);
 		} catch(Exception exception) {
-			exception.printStackTrace();
 			this.kick("Error: Internal Mismatch (0x01)");
 		}
 	}
