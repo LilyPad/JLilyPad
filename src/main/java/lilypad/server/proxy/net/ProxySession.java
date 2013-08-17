@@ -1,6 +1,8 @@
 package lilypad.server.proxy.net;
 
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -8,6 +10,9 @@ import java.util.Set;
 import lilypad.packet.common.PacketDecoder;
 import lilypad.packet.common.PacketEncoder;
 import lilypad.server.proxy.ProxyConfig;
+import lilypad.server.proxy.http.HttpGetClient;
+import lilypad.server.proxy.http.HttpGetClientListener;
+import lilypad.server.proxy.http.SyncHttpGetClient;
 import lilypad.server.proxy.packet.CraftPacketCodecRegistry;
 import lilypad.server.proxy.packet.CraftPacketConstants;
 import lilypad.server.proxy.packet.GenericPacket;
@@ -63,17 +68,33 @@ public class ProxySession {
 	}
 
 	public void inboundAuthenticate() {
-		try {
-			boolean success = false;
-			if(this.serverKey.equals("-")) {
-				success = true;
-			} else {
-				success = MinecraftUtils.authenticate(this.username, SecurityUtils.shaHex(this.getServerKey().getBytes("ISO_8859_1"), this.sharedSecret, this.config.proxy_getKeyPair().getPublic().getEncoded()));
-			}
-			this.inboundAuthenticate(success);
-		} catch(Exception exception) {
-			this.kick("Error: Internal Mismatch (0x01)");
+		if(this.serverKey.equals("-")) {
+			this.inboundAuthenticate(true);
+			return;
 		}
+		URI uri;
+		try {
+			uri = MinecraftUtils.getSessionURI(this.username, SecurityUtils.shaHex(this.getServerKey().getBytes("ISO_8859_1"), this.sharedSecret, this.config.proxy_getKeyPair().getPublic().getEncoded()));
+		} catch(UnsupportedEncodingException exception) {
+			exception.printStackTrace();
+			return;
+		}
+		HttpGetClient httpGetClient = new SyncHttpGetClient(uri);
+		httpGetClient.registerListener(new HttpGetClientListener() {
+			public void httpResponse(HttpGetClient httpClient, String response) {
+				if(response.trim().equals("YES")) {
+					inboundAuthenticate(true);
+				} else {
+					inboundAuthenticate(false);
+				}
+			}
+			public void exceptionCaught(HttpGetClient httpClient, Throwable throwable) {
+				System.out.println("[LilyPad] error: Authentication to Minecraft.net Failed");
+				throwable.printStackTrace();
+				inboundAuthenticate(false);
+			}
+		});
+		httpGetClient.run();
 	}
 
 	public void inboundAuthenticate(boolean success) {
