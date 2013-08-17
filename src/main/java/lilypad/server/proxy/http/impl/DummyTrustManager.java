@@ -3,6 +3,7 @@ package lilypad.server.proxy.http.impl;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -11,22 +12,28 @@ import javax.net.ssl.X509TrustManager;
 public class DummyTrustManager implements X509TrustManager {
 
 	private static SSLContext dummySSLContext;
+	private static ReentrantLock dummySSLContextLock;
 	public static final DummyTrustManager instance = new DummyTrustManager();
 
 	public static SSLContext getDummySSLContext() {
-		if(dummySSLContext == null) {
-			try {
-				dummySSLContext = SSLContext.getInstance("TLS");
-			} catch (NoSuchAlgorithmException exception) {
-				exception.printStackTrace();
-				return null;
+		dummySSLContextLock.lock();
+		try {
+			if(dummySSLContext == null) {
+				try {
+					dummySSLContext = SSLContext.getInstance("TLS");
+				} catch (NoSuchAlgorithmException exception) {
+					exception.printStackTrace();
+					return null;
+				}
+				try {
+					dummySSLContext.init(null, new TrustManager[] { instance }, null);
+				} catch (KeyManagementException exception) {
+					exception.printStackTrace();
+					return null;
+				}
 			}
-			try {
-				dummySSLContext.init(null, new TrustManager[] { instance }, null);
-			} catch (KeyManagementException exception) {
-				exception.printStackTrace();
-				return null;
-			}
+		} finally {
+			dummySSLContextLock.unlock();
 		}
 		return dummySSLContext;
 	}
