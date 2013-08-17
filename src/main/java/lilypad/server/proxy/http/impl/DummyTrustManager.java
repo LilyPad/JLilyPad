@@ -12,7 +12,7 @@ public class DummyTrustManager implements X509TrustManager {
 
 	private static SSLContext dummySSLContext;
 	public static final DummyTrustManager instance = new DummyTrustManager();
-	
+
 	public static SSLContext getDummySSLContext() {
 		if(dummySSLContext == null) {
 			try {
@@ -30,21 +30,21 @@ public class DummyTrustManager implements X509TrustManager {
 		}
 		return dummySSLContext;
 	}
-	
+
 	private DummyTrustManager() {
-		
+
 	}
-	
-    public X509Certificate[] getAcceptedIssuers() {
-        return new X509Certificate[0];
-    }
 
-    public void checkClientTrusted(X509Certificate[] chain, String authType) {
-    	// blank
-    }
+	public X509Certificate[] getAcceptedIssuers() {
+		return new X509Certificate[0];
+	}
 
-    public void checkServerTrusted(X509Certificate[] chain, String authType) {
-    	// blank
-    }
+	public void checkClientTrusted(X509Certificate[] chain, String authType) {
+		// blank
+	}
+
+	public void checkServerTrusted(X509Certificate[] chain, String authType) {
+		// blank
+	}
 
 }
