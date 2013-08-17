@@ -82,7 +82,6 @@ public class AsyncHttpGetClient implements HttpGetClient {
 					HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, AsyncHttpGetClient.this.path);
 					request.headers().set(HttpHeaders.Names.HOST, AsyncHttpGetClient.this.host);
 					request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
-					request.headers().set(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
 					future.channel().writeAndFlush(request);
 				} else {
 					AsyncHttpGetClient.this.dispatchExceptionCaught(future.cause());
