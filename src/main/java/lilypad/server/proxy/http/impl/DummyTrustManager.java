@@ -12,10 +12,13 @@ import javax.net.ssl.X509TrustManager;
 public class DummyTrustManager implements X509TrustManager {
 
 	private static SSLContext dummySSLContext;
-	private static ReentrantLock dummySSLContextLock;
+	private static ReentrantLock dummySSLContextLock = new ReentrantLock();
 	public static final DummyTrustManager instance = new DummyTrustManager();
 
 	public static SSLContext getDummySSLContext() {
+		if(dummySSLContext != null) {
+			return dummySSLContext;
+		}
 		dummySSLContextLock.lock();
 		try {
 			if(dummySSLContext == null) {
