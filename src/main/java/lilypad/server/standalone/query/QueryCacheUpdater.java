@@ -49,6 +49,9 @@ public class QueryCacheUpdater implements Runnable {
 		ConnectSettings settings = connect.getSettings();
 		try {
 			CLOSED_WHILE: while(!this.connect.isClosed()) {
+				// preconnect
+				this.queryCache.invalidate();
+				
 				// connect
 				try {
 					this.connect.connect();
