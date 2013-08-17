@@ -50,6 +50,7 @@ public class ConnectThread implements Runnable {
 			while(!this.connect.isClosed()) {
 				// preconnect
 				this.connectServerSource.clearServers();
+				this.connectPlayerCallback.clearPlayers();
 				
 				// connect
 				try {

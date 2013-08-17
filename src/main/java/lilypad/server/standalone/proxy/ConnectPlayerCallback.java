@@ -24,27 +24,9 @@ public class ConnectPlayerCallback implements IPlayerCallback {
 	}
 	
 	public void resendLocalPlayers() throws RequestException {		
-		for(String player : localPlayers) {
+		for(String player : this.localPlayers) {
 			this.connect.request(new NotifyPlayerRequest(true, player));
 		}
-	}
-	
-	public boolean queryPlayers() throws RequestException, InterruptedException {
-		GetPlayersResult result = this.connect.request(new GetPlayersRequest(false)).await(10000L);
-		if(result == null) {
-			return false;
-		}
-		this.playerCount = result.getCurrentPlayers();
-		this.playerMaximum = result.getMaximumPlayers();
-		return true;
-	}
-	
-	public int getPlayerCount() {
-		return this.playerCount;
-	}
-	
-	public int getPlayerMaximum() {
-		return this.playerMaximum;
 	}
 
 	public int notifyPlayerJoin(String player) {
@@ -73,6 +55,29 @@ public class ConnectPlayerCallback implements IPlayerCallback {
 			// ignore
 		}
 		this.localPlayers.remove(player);
+	}
+	
+	public boolean queryPlayers() throws RequestException, InterruptedException {
+		GetPlayersResult result = this.connect.request(new GetPlayersRequest(false)).await(10000L);
+		if(result == null) {
+			return false;
+		}
+		this.playerCount = result.getCurrentPlayers();
+		this.playerMaximum = result.getMaximumPlayers();
+		return true;
+	}
+	
+	public int getPlayerCount() {
+		return this.playerCount;
+	}
+	
+	public int getPlayerMaximum() {
+		return this.playerMaximum;
+	}
+	
+	public void clearPlayers() {
+		this.playerCount = 0;
+		this.playerMaximum = 0;
 	}
 
 }
