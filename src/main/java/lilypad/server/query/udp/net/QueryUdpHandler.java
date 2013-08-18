@@ -98,7 +98,6 @@ public class QueryUdpHandler extends SimpleChannelInboundHandler<DatagramPacket>
 			response.writeInt(identification.getRequestId());
 			response.writeBytes(Integer.toString(identification.getChallenge()).getBytes()); response.writeByte(0x00);
 			context.writeAndFlush(new DatagramPacket(response, packet.sender()));
-			context.write(null);
 			break;
 		}
 	}
