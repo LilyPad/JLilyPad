@@ -8,7 +8,7 @@
   <packaging>jar</packaging>
 
   <name>Server-Standalone-Query</name>
-  <url>http://lilypadmc.com</url>
+  <url>http://lilypadmc.org</url>
   
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,7 +18,7 @@
   <repositories>
     <repository>
       <id>lilypad</id>
-      <url>http://ci.lilypadmc.com/plugin/repository/everything</url>
+      <url>http://ci.lilypadmc.org/plugin/repository/everything</url>
     </repository>
   </repositories>
   
