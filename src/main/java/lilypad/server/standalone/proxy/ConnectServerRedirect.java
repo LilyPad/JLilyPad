@@ -1,12 +1,11 @@
 package lilypad.server.standalone.proxy;
 
-import lilypad.client.connect.api.Connect;
-import lilypad.client.connect.api.RedirectEvent;
-import lilypad.client.connect.api.RedirectEventListener;
+import lilypad.client.connect.api.event.EventListener;
+import lilypad.client.connect.api.event.RedirectEvent;
 import lilypad.server.common.IRedirectable;
 import lilypad.server.common.IServer;
 
-public class ConnectServerRedirect implements RedirectEventListener {
+public class ConnectServerRedirect {
 
 	private ConnectServerSource connectServerSource;
 	private IRedirectable redirectable;
@@ -16,7 +15,8 @@ public class ConnectServerRedirect implements RedirectEventListener {
 		this.redirectable = redirectable;
 	}
 	
-	public void onRedirect(Connect connect, RedirectEvent redirectEvent) {
+	@EventListener
+	public void onRedirect(RedirectEvent redirectEvent) {
 		IServer server = this.connectServerSource.getServerByName(redirectEvent.getServer());
 		if(server == null) {
 			return;

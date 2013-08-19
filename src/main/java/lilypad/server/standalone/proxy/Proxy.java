@@ -31,10 +31,10 @@ public class Proxy {
 
 		ProxyConfig config = fileConfigJson.getConfig();
 		Connect connect = new ConnectImpl(config, config.proxy_getBindAddress().getHostName());
-		ConnectServerSource connectServerSource = new ConnectServerSource();
+		ConnectServerSource connectServerSource = new ConnectServerSource(connect);
 		ConnectPlayerCallback connectPlayerCallback = new ConnectPlayerCallback(connect);
-		connect.registerServerEventListener(connectServerSource);
-		connect.registerRedirectEventListener(new ConnectServerRedirect(connectServerSource, proxyService));
+		connect.registerEvents(connectServerSource);
+		connect.registerEvents(new ConnectServerRedirect(connectServerSource, proxyService));
 		config.init(connectServerSource, connectPlayerCallback, CipherUtils.generateRSAKeyPair(1024));
 
 		ConnectThread connectThread = new ConnectThread(connect, connectServerSource, connectPlayerCallback, config);
