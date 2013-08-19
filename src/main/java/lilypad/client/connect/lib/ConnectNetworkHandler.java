@@ -20,6 +20,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.ReadTimeoutException;
 
+@SuppressWarnings("deprecation")
 public class ConnectNetworkHandler extends SimpleChannelInboundHandler<Packet> {
 
 	private ConnectImpl connect;

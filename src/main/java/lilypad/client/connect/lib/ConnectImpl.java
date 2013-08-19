@@ -50,6 +50,7 @@ import lilypad.packet.common.PacketEncoder;
 import lilypad.packet.connect.ConnectPacketCodecRegistry;
 import lilypad.packet.connect.impl.RequestPacket;
 
+@SuppressWarnings("deprecation")
 public class ConnectImpl implements Connect {
 
 	private NioEventLoopGroup eventGroup;
