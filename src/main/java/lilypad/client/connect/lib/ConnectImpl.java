@@ -260,7 +260,7 @@ public class ConnectImpl implements Connect {
 		this.eventListenersLock.lock();
 		try {
 			Map<Class<? extends Event>, Set<Method>> eventListeners = new HashMap<Class<? extends Event>, Set<Method>>();
-			for(Method method : object.getClass().getDeclaredMethods()) {
+			for(Method method : object.getClass().getMethods()) {
 				EventListener annotation = method.getAnnotation(EventListener.class);
 				if(annotation == null) {
 					continue;
