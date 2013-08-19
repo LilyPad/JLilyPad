@@ -3,9 +3,10 @@ package lilypad.client.connect.lib;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import lilypad.client.connect.api.MessageEvent;
-import lilypad.client.connect.api.RedirectEvent;
-import lilypad.client.connect.api.ServerAddEvent;
+import lilypad.client.connect.api.event.MessageEvent;
+import lilypad.client.connect.api.event.RedirectEvent;
+import lilypad.client.connect.api.event.ServerAddEvent;
+import lilypad.client.connect.api.event.ServerRemoveEvent;
 import lilypad.client.connect.api.result.StatusCode;
 import lilypad.packet.common.Packet;
 import lilypad.packet.connect.ConnectPacketConstants;
@@ -52,19 +53,27 @@ public class ConnectNetworkHandler extends SimpleChannelInboundHandler<Packet> {
 			break;
 		case 0x03:
 			MessagePacket messagePacket = (MessagePacket) packet;
-			this.connect.dispatchMessageEvent(new MessageEvent(messagePacket.getSender(), messagePacket.getChannel(), messagePacket.getPayload().array()));
+			MessageEvent messageEvent = new MessageEvent(messagePacket.getSender(), messagePacket.getChannel(), messagePacket.getPayload().array());
+			this.connect.dispatchMessageEvent(new lilypad.client.connect.api.MessageEvent(messageEvent));
+			this.connect.dispatchEvent(messageEvent);
 			break;
 		case 0x04:
 			RedirectPacket redirectPacket = (RedirectPacket) packet;
-			this.connect.dispatchRedirectEvent(new RedirectEvent(redirectPacket.getServer(), redirectPacket.getPlayer()));
+			RedirectEvent redirectEvent = new RedirectEvent(redirectPacket.getServer(), redirectPacket.getPlayer());
+			this.connect.dispatchRedirectEvent(new lilypad.client.connect.api.RedirectEvent(redirectEvent));
+			this.connect.dispatchEvent(redirectEvent);
 			break;
 		case 0x05:
 			ServerPacket serverPacket = (ServerPacket) packet;
 			if(serverPacket.isAdding()) {
 				ServerAddPacket serverAddPacket = (ServerAddPacket) serverPacket;
-				this.connect.dispatchServerAddEvent(new ServerAddEvent(serverAddPacket.getServer(), serverAddPacket.getSecurityKey(), new InetSocketAddress(serverAddPacket.getAddress(), serverAddPacket.getPort())));
+				ServerAddEvent serverAddEvent = new ServerAddEvent(serverAddPacket.getServer(), serverAddPacket.getSecurityKey(), new InetSocketAddress(serverAddPacket.getAddress(), serverAddPacket.getPort()));
+				this.connect.dispatchServerAddEvent(new lilypad.client.connect.api.ServerAddEvent(serverAddEvent));
+				this.connect.dispatchEvent(serverAddEvent);
 			} else {
+				ServerRemoveEvent serverRemoveEvent = new ServerRemoveEvent(serverPacket.getServer());
 				this.connect.dispatchServerRemoveEvent(serverPacket.getServer());
+				this.connect.dispatchEvent(serverRemoveEvent);
 			}
 			break;
 		default:
