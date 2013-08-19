@@ -43,7 +43,7 @@ public class ConnectPlayable implements IPlayable {
 			return false;
 		}
 		nodeSession.write(new RedirectPacket(server.getIdentification(), name));
-		return false;
+		return true;
 	}
 
 }
