@@ -2,15 +2,17 @@ package lilypad.client.connect.api;
 
 import java.net.InetSocketAddress;
 
-/**
- * Called when a server has been added to the network
- * when the session is the role of a proxy.
- */
-public class ServerAddEvent {
+@Deprecated
+public class ServerAddEvent extends lilypad.client.connect.api.event.ServerAddEvent {
 
-	private String server;
-	private String securityKey;
-	private InetSocketAddress address;
+	/**
+	 * Create a legacy server add event from a new server add event.
+	 * 
+	 * @param event
+	 */
+	public ServerAddEvent(lilypad.client.connect.api.event.ServerAddEvent event) {
+		super(event.getServer(), event.getSecurityKey(), event.getAddress());
+	}
 	
 	/**
 	 * 
@@ -19,33 +21,7 @@ public class ServerAddEvent {
 	 * @param address the connection address of the server
 	 */
 	public ServerAddEvent(String server, String securityKey, InetSocketAddress address) {
-		this.server = server;
-		this.securityKey = securityKey;
-		this.address = address;
+		super(server, securityKey, address);
 	}
-	
-	/**
-	 * 
-	 * @return the server that has been added
-	 */
-	public String getServer() {
-		return this.server;
-	}
-	
-	/**
-	 * 
-	 * @return the security key of the server
-	 */
-	public String getSecurityKey() {
-		return this.securityKey;
-	}
-	
-	/**
-	 * 
-	 * @return the connection address of the server
-	 */
-	public InetSocketAddress getAddress() {
-		return this.address;
-	}
-	
+
 }

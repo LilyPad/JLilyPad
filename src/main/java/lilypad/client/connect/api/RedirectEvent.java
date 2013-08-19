@@ -1,33 +1,24 @@
 package lilypad.client.connect.api;
 
-/**
- * Called when a player is to be redirected to a specified
- * server by the session when the session is the role of a proxy.
- */
-public class RedirectEvent {
+@Deprecated
+public class RedirectEvent extends lilypad.client.connect.api.event.RedirectEvent {
 
-	private String server;
-	private String player;
+	/**
+	 * Create a legacy redirect event from a new redirect event.
+	 * 
+	 * @param event
+	 */
+	public RedirectEvent(lilypad.client.connect.api.event.RedirectEvent event) {
+		super(event.getServer(), event.getPlayer());
+	}
 	
+	/**
+	 * 
+	 * @param server the server to redirect to
+	 * @param player the player to be redirected
+	 */
 	public RedirectEvent(String server, String player) {
-		this.server = server;
-		this.player = player;
+		super(server, player);
 	}
 
-	/**
-	 * 
-	 * @return the server to redirect to
-	 */
-	public String getServer() {
-		return this.server;
-	}
-	
-	/**
-	 * 
-	 * @return the player to be redirected
-	 */
-	public String getPlayer() {
-		return this.player;
-	}
-	
 }

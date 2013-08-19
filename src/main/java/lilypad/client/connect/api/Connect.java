@@ -35,11 +35,28 @@ public interface Connect {
 	public <T extends Result> FutureResult<T> request(Request<T> request) throws RequestException;
 
 	/**
+	 * Register event listener methods dictated by the EventListener
+	 * annotation.
+	 * 
+	 * @param object
+	 */
+	public void registerEvents(Object object);
+	
+	/**
+	 * Unregister event listener methods dictated by the EventListener
+	 * annotation.
+	 * 
+	 * @param object
+	 */
+	public void unregisterEvents(Object object);
+	
+	/**
 	 * Register a MessageEventListener to receive an events when
 	 * a message has been received by this specific session.
 	 * 
 	 * @param messageEventListener
 	 */
+	@Deprecated
 	public void registerMessageEventListener(MessageEventListener messageEventListener);
 	
 	/**
@@ -48,6 +65,7 @@ public interface Connect {
 	 * 
 	 * @param messageEventListener
 	 */
+	@Deprecated
 	public void unregisterMessageEventListener(MessageEventListener messageEventListener);
 	
 	/**
@@ -57,6 +75,7 @@ public interface Connect {
 	 * 
 	 * @param redirectEventListener
 	 */
+	@Deprecated
 	public void registerRedirectEventListener(RedirectEventListener redirectEventListener);
 	
 	/**
@@ -65,6 +84,7 @@ public interface Connect {
 	 * 
 	 * @param redirectEventListener
 	 */
+	@Deprecated
 	public void unregisterRedirectEventListener(RedirectEventListener redirectEventListener);
 	
 	/**
@@ -74,6 +94,7 @@ public interface Connect {
 	 * 
 	 * @param serverEventListener
 	 */
+	@Deprecated
 	public void registerServerEventListener(ServerEventListener serverEventListener);
 	
 	/**
@@ -82,6 +103,7 @@ public interface Connect {
 	 * 
 	 * @param serverEventListener
 	 */
+	@Deprecated
 	public void unregisterServerEventListener(ServerEventListener serverEventListener);
 	
 	/**

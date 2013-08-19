@@ -1,5 +1,6 @@
 package lilypad.client.connect.api;
 
+@Deprecated
 public interface MessageEventListener {
 
 	/**
