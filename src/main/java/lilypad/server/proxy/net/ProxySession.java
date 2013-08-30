@@ -87,22 +87,23 @@ public class ProxySession {
 		HttpGetClient httpGetClient = new AsyncHttpGetClient(uri, this.inboundChannel.eventLoop());
 		httpGetClient.registerListener(new HttpGetClientListener() {
 			public void httpResponse(HttpGetClient httpClient, String response) {
+				if(ssl) {
+					httpsRequests.decrementAndGet();
+				}
 				if(response.trim().equals("YES")) {
 					inboundAuthenticate(true);
 				} else {
 					inboundAuthenticate(false);
 				}
+				
+			}
+			public void exceptionCaught(HttpGetClient httpClient, Throwable throwable) {
 				if(ssl) {
 					httpsRequests.decrementAndGet();
 				}
-			}
-			public void exceptionCaught(HttpGetClient httpClient, Throwable throwable) {
 				System.out.println("[LilyPad] error: Authentication to Minecraft.net Failed");
 				throwable.printStackTrace();
 				inboundAuthenticate(false);
-				if(ssl) {
-					httpsRequests.decrementAndGet();
-				}
 			}
 		});
 		httpGetClient.run();
