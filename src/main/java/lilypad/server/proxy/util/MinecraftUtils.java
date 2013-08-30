@@ -7,12 +7,12 @@ import java.net.URLEncoder;
 
 public class MinecraftUtils {
 
-	public static URI getSessionURI(String username, String serverKey) {
+	public static URI getSessionURI(String username, String serverKey, boolean ssl) {
 		if(username == null || serverKey == null) {
 			return null;
 		}
 		try {
-			return new URI("https://session.minecraft.net/game/checkserver.jsp?user=" + URLEncoder.encode(username, "UTF-8") + "&serverId=" + URLEncoder.encode(serverKey, "UTF-8"));
+			return new URI((ssl ? "https" : "http") + "://session.minecraft.net/game/checkserver.jsp?user=" + URLEncoder.encode(username, "UTF-8") + "&serverId=" + URLEncoder.encode(serverKey, "UTF-8"));
 		} catch(UnsupportedEncodingException exception) {
 			exception.printStackTrace();
 		} catch(URISyntaxException exception) {

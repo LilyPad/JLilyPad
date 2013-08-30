@@ -6,6 +6,7 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import lilypad.packet.common.PacketDecoder;
 import lilypad.packet.common.PacketEncoder;
@@ -39,6 +40,9 @@ import io.netty.handler.timeout.ReadTimeoutHandler;
 
 public class ProxySession {
 
+	private static final AtomicInteger httpsRequests = new AtomicInteger(0);
+	private static final int maximumHttpsRequests = 16;
+	
 	private ProxyConfig config;
 	private ProxySessionMapper sessionMapper;
 
@@ -72,9 +76,10 @@ public class ProxySession {
 			this.inboundAuthenticate(true);
 			return;
 		}
+		final boolean ssl = httpsRequests.get() < maximumHttpsRequests;
 		URI uri;
 		try {
-			uri = MinecraftUtils.getSessionURI(this.username, SecurityUtils.shaHex(this.getServerKey().getBytes("ISO_8859_1"), this.sharedSecret, this.config.proxy_getKeyPair().getPublic().getEncoded()));
+			uri = MinecraftUtils.getSessionURI(this.username, SecurityUtils.shaHex(this.getServerKey().getBytes("ISO_8859_1"), this.sharedSecret, this.config.proxy_getKeyPair().getPublic().getEncoded()), ssl);
 		} catch(UnsupportedEncodingException exception) {
 			exception.printStackTrace();
 			return;
@@ -87,14 +92,23 @@ public class ProxySession {
 				} else {
 					inboundAuthenticate(false);
 				}
+				if(ssl) {
+					httpsRequests.decrementAndGet();
+				}
 			}
 			public void exceptionCaught(HttpGetClient httpClient, Throwable throwable) {
 				System.out.println("[LilyPad] error: Authentication to Minecraft.net Failed");
 				throwable.printStackTrace();
 				inboundAuthenticate(false);
+				if(ssl) {
+					httpsRequests.decrementAndGet();
+				}
 			}
 		});
 		httpGetClient.run();
+		if(ssl) {
+			httpsRequests.incrementAndGet();
+		}
 	}
 
 	public void inboundAuthenticate(boolean success) {
