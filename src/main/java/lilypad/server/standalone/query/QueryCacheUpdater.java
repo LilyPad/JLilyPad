@@ -143,7 +143,7 @@ public class QueryCacheUpdater implements Runnable {
 		} catch(InterruptedException exception) {
 			//ignore
 		} catch(Exception exception) {
-			System.out.println("-=== FATAL ===- Please report this error to http://lilypadmc.com:");
+			System.out.println("-=== FATAL ===- Please report this error to http://lilypadmc.org:");
 			exception.printStackTrace();
 		}
 	}
