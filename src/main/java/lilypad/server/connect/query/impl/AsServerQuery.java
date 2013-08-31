@@ -21,7 +21,9 @@ public class AsServerQuery implements Query<NodeSession> {
 		if(ip.length() == 0) {
 			ip = sender.getAddress().getAddress().getHostAddress();
 		}
-		sender.markServer(new InetSocketAddress(ip, payload.readUnsignedShort()));
+		if(!sender.markServer(new InetSocketAddress(ip, payload.readUnsignedShort()))) {
+			return new ResultPacket(id, ConnectPacketConstants.statusInvalidGeneric);
+		}
 		ByteBuf response = Unpooled.buffer();
 		BufferUtils.writeString16(sender.getSecurityKey(), response);
 		return new ResultPacket(id, response);

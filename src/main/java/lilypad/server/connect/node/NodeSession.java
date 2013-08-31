@@ -53,11 +53,12 @@ public class NodeSession implements IServer {
 		this.connectService.getSessionMapper().markAuthenticated(this);
 	}
 
-	public void markServer(InetSocketAddress inboundAddress) {
+	public boolean markServer(InetSocketAddress inboundAddress) {
 		NodeSessionMapper sessionMapper = this.connectService.getSessionMapper();
-		NodeSession lastSession = sessionMapper.getServerByUsername(this.username);
-		if(lastSession != null) {
-			lastSession.getChannel().close();
+		NodeSession serverSession = sessionMapper.getServerByUsername(this.username);
+		NodeSession proxySession = sessionMapper.getProxyByUsername(this.username);
+		if(serverSession != null || proxySession != null) {
+			return false;
 		}
 		sessionMapper.remove(this);
 		this.role = NodeSessionRole.SERVER;
@@ -68,13 +69,15 @@ public class NodeSession implements IServer {
 		for(NodeSession proxy : sessionMapper.getProxies()) {
 			proxy.write(new ServerAddPacket(this.username, this.securityKey, this.inboundAddress.getAddress().getHostAddress(), this.inboundAddress.getPort()));
 		}
+		return true;
 	}
 
-	public void markProxy(InetSocketAddress inboundAddress, String motd, String version, int maximumPlayers) {
+	public boolean markProxy(InetSocketAddress inboundAddress, String motd, String version, int maximumPlayers) {
 		NodeSessionMapper sessionMapper = this.connectService.getSessionMapper();
-		NodeSession lastSession = sessionMapper.getProxyByUsername(this.username);
-		if(lastSession != null) {
-			lastSession.getChannel().close();
+		NodeSession serverSession = sessionMapper.getServerByUsername(this.username);
+		NodeSession proxySession = sessionMapper.getProxyByUsername(this.username);
+		if(serverSession != null || proxySession != null) {
+			return false;
 		}
 		sessionMapper.remove(this);
 		this.role = NodeSessionRole.PROXY;
@@ -88,6 +91,7 @@ public class NodeSession implements IServer {
 		for(NodeSession server : sessionMapper.getServers()) {
 			this.write(new ServerAddPacket(server.getIdentification(), server.getSecurityKey(), server.getInboundAddress().getAddress().getHostAddress(), server.getInboundAddress().getPort()));
 		}
+		return true;
 	}
 
 	public void handleRequest(RequestPacket requestPacket) {

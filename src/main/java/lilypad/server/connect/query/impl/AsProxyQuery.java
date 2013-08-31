@@ -20,10 +20,12 @@ public class AsProxyQuery implements Query<NodeSession> {
 		if(inboundIp.length() == 0) {
 			inboundIp = sender.getAddress().getAddress().getHostAddress();
 		}
-		sender.markProxy(new InetSocketAddress(inboundIp, payload.readUnsignedShort()),
+		if(!sender.markProxy(new InetSocketAddress(inboundIp, payload.readUnsignedShort()),
 				BufferUtils.readString16(payload), 
 				BufferUtils.readString16(payload), 
-				payload.readUnsignedShort());
+				payload.readUnsignedShort())) {
+			return new ResultPacket(id, ConnectPacketConstants.statusInvalidGeneric);
+		}
 		return new ResultPacket(id, ConnectPacketConstants.statusSuccess);
 	}
 
