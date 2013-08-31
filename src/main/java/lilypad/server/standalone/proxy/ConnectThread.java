@@ -105,6 +105,11 @@ public class ConnectThread implements Runnable {
 				switch(asProxyResult.getStatusCode()) {
 				case SUCCESS:
 					break;
+				case INVALID_GENERIC:
+					connect.disconnect();
+					System.out.println("[Connect] Invalid username, already in use");
+					Thread.sleep(1000L);
+					break;
 				default:
 					connect.disconnect();
 					System.out.println("[Connect] Unknown error while acquiring role: \"" + asProxyResult.getStatusCode() + "\", retrying");
