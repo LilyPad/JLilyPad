@@ -54,6 +54,14 @@ public class SyncHttpGetClient implements HttpGetClient {
 		}
 	}
 	
+	public boolean isRunning() {
+		throw new UnsupportedOperationException();
+	}
+	
+	public void close() {
+		throw new UnsupportedOperationException();
+	}
+	
 	public void dispatchHttpResponse(String response) {
 		for(HttpGetClientListener listener : this.listeners) {
 			listener.httpResponse(this, response);

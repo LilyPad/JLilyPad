@@ -1,6 +1,7 @@
 package lilypad.server.proxy.http.impl;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
@@ -37,6 +38,7 @@ public class AsyncHttpGetClient implements HttpGetClient {
 	private String path;
 	private EventLoop eventLoop;
 	private List<HttpGetClientListener> listeners = new ArrayList<HttpGetClientListener>();
+	private Channel channel;
 
 	public AsyncHttpGetClient(URI uri, EventLoop eventLoop) {
 		String scheme = uri.getScheme();
@@ -62,32 +64,49 @@ public class AsyncHttpGetClient implements HttpGetClient {
 
 	public void run() {
 		new Bootstrap().group(this.eventLoop)
-				.channel(NioSocketChannel.class)
-				.remoteAddress(this.host, this.port)
-				.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) timeout)
-				.handler(new ChannelInitializer<SocketChannel>() {
-					public void initChannel(SocketChannel channel) throws Exception {
-						channel.pipeline().addLast(new ReadTimeoutHandler(timeout, TimeUnit.MILLISECONDS));
-						if(AsyncHttpGetClient.this.ssl) {
-							SSLEngine engine = DummyTrustManager.getDummySSLContext().createSSLEngine();
-							engine.setUseClientMode(true);
-							channel.pipeline().addLast("ssl", new SslHandler(engine));
-						}
-						channel.pipeline().addLast(new HttpClientCodec());
-						channel.pipeline().addLast(new AsyncHttpGetClientHandler(AsyncHttpGetClient.this));
-					}
-				}).connect().addListener(new ChannelFutureListener() {
+		.channel(NioSocketChannel.class)
+		.remoteAddress(this.host, this.port)
+		.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) timeout)
+		.handler(new ChannelInitializer<SocketChannel>() {
+			public void initChannel(SocketChannel channel) throws Exception {
+				channel.pipeline().addLast(new ReadTimeoutHandler(timeout, TimeUnit.MILLISECONDS));
+				if(AsyncHttpGetClient.this.ssl) {
+					SSLEngine engine = DummyTrustManager.getDummySSLContext().createSSLEngine();
+					engine.setUseClientMode(true);
+					channel.pipeline().addLast("ssl", new SslHandler(engine));
+				}
+				channel.pipeline().addLast(new HttpClientCodec());
+				channel.pipeline().addLast(new AsyncHttpGetClientHandler(AsyncHttpGetClient.this));
+			}
+		}).connect().addListener(new ChannelFutureListener() {
 			public void operationComplete(ChannelFuture future) throws Exception {
 				if(future.isSuccess()) {
 					HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, AsyncHttpGetClient.this.path);
 					request.headers().set(HttpHeaders.Names.HOST, AsyncHttpGetClient.this.host);
 					request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
-					future.channel().writeAndFlush(request);
+					AsyncHttpGetClient.this.channel = future.channel();
+					AsyncHttpGetClient.this.channel.writeAndFlush(request);
 				} else {
 					AsyncHttpGetClient.this.dispatchExceptionCaught(future.cause());
 				}
 			}
 		});
+	}
+
+	public boolean isRunning() {
+		return this.channel != null && this.channel.isOpen();
+	}
+
+	public void close() {
+		try {
+			if(this.channel != null && this.channel.isOpen()) {
+				this.channel.close();
+			}
+		} catch(Exception exception) {
+			exception.printStackTrace();
+		} finally {
+			this.channel = null;
+		}
 	}
 
 	public void dispatchHttpResponse(String response) {

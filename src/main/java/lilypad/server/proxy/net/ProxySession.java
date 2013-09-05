@@ -48,6 +48,7 @@ public class ProxySession {
 
 	private Channel inboundChannel;
 	private Channel outboundChannel;
+	private HttpGetClient authHttpGetClient;
 	private LoginState state = LoginState.DISCONNECTED;
 
 	private String username;
@@ -84,8 +85,8 @@ public class ProxySession {
 			exception.printStackTrace();
 			return;
 		}
-		HttpGetClient httpGetClient = new AsyncHttpGetClient(uri, this.inboundChannel.eventLoop());
-		httpGetClient.registerListener(new HttpGetClientListener() {
+		HttpGetClient authHttpGetClient = new AsyncHttpGetClient(uri, this.inboundChannel.eventLoop());
+		authHttpGetClient.registerListener(new HttpGetClientListener() {
 			public void httpResponse(HttpGetClient httpClient, String response) {
 				if(ssl) {
 					httpsRequests.decrementAndGet();
@@ -106,7 +107,7 @@ public class ProxySession {
 				inboundAuthenticate(false);
 			}
 		});
-		httpGetClient.run();
+		authHttpGetClient.run();
 		if(ssl) {
 			httpsRequests.incrementAndGet();
 		}
@@ -182,6 +183,9 @@ public class ProxySession {
 			if(this.outboundChannel != null && this.outboundChannel.isOpen()) {
 				this.outboundChannel.close();
 			}
+			if(this.authHttpGetClient != null && this.authHttpGetClient.isRunning()) {
+				this.authHttpGetClient.close();
+			}
 		} catch(Exception exception) {
 			exception.printStackTrace();
 		} finally {
@@ -189,6 +193,7 @@ public class ProxySession {
 			this.sessionMapper = null;
 			this.inboundChannel = null;
 			this.outboundChannel = null;
+			this.authHttpGetClient = null;
 			this.state = LoginState.DISCONNECTED;
 			this.username = null;
 			this.serverHost = null;
