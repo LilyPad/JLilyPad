@@ -42,7 +42,7 @@ public class ProxySession {
 
 	private static final AtomicInteger httpsRequests = new AtomicInteger(0);
 	private static final int maximumHttpsRequests = 16;
-	
+
 	private ProxyConfig config;
 	private ProxySessionMapper sessionMapper;
 
@@ -96,7 +96,7 @@ public class ProxySession {
 				} else {
 					inboundAuthenticate(false);
 				}
-				
+
 			}
 			public void exceptionCaught(HttpGetClient httpClient, Throwable throwable) {
 				if(ssl) {
@@ -157,7 +157,7 @@ public class ProxySession {
 
 	public void inboundDisconnected() {
 		try {
-			if(this.username != null) {
+			if(this.username != null && this.isAuthenticated()) {
 				if(this.config != null) {
 					IPlayerCallback playerCallback = this.config.proxy_getPlayerCallback();
 					if(playerCallback != null) {
@@ -301,19 +301,19 @@ public class ProxySession {
 
 	public void redirect(final IServer server) { 
 		new Bootstrap().group(this.inboundChannel.eventLoop())
-				.channel(NioSocketChannel.class)
-				.localAddress(this.config.proxy_getOutboundAddress())
-				.remoteAddress(server.getInboundAddress())
-				.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
-				.handler(new ChannelInitializer<SocketChannel>() {
-					public void initChannel(SocketChannel channel) throws Exception {
-						channel.pipeline().addLast(new ReadTimeoutHandler(30));
-						channel.pipeline().addLast(new PacketEncoder(CraftPacketCodecRegistry.instance));
-						channel.pipeline().addLast(new PacketDecoder(CraftPacketCodecRegistry.instance));
-						channel.pipeline().addLast(new ProxyOutboundHandler(server, ProxySession.this));
-					}
-				})
-				.connect().addListener(new ChannelFutureListener() {
+		.channel(NioSocketChannel.class)
+		.localAddress(this.config.proxy_getOutboundAddress())
+		.remoteAddress(server.getInboundAddress())
+		.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
+		.handler(new ChannelInitializer<SocketChannel>() {
+			public void initChannel(SocketChannel channel) throws Exception {
+				channel.pipeline().addLast(new ReadTimeoutHandler(30));
+				channel.pipeline().addLast(new PacketEncoder(CraftPacketCodecRegistry.instance));
+				channel.pipeline().addLast(new PacketDecoder(CraftPacketCodecRegistry.instance));
+				channel.pipeline().addLast(new ProxyOutboundHandler(server, ProxySession.this));
+			}
+		})
+		.connect().addListener(new ChannelFutureListener() {
 			public void operationComplete(ChannelFuture future) throws Exception {
 				if(future.isSuccess()) {
 					return;
