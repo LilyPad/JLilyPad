@@ -376,7 +376,7 @@ public class ProxySession {
 	}
 
 	public boolean isAuthenticated() {
-		return this.state == LoginState.CONNECTED;
+		return this.state == LoginState.CONNECTED || this.state == LoginState.INITIALIZE;
 	}
 
 	public void setState(LoginState state) {
