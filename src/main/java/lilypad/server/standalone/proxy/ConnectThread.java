@@ -136,7 +136,7 @@ public class ConnectThread implements Runnable {
 		} catch(InterruptedException exception) {
 			//ignore
 		} catch(Exception exception) {
-			System.out.println("-=== FATAL ===- Please report this error to http://lilypadmc.org:");
+			System.out.println("[Connect] FATAL: Please report this error to http://www.lilypadmc.org:");
 			exception.printStackTrace();
 		}
 	}
