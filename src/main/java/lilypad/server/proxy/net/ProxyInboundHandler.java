@@ -3,8 +3,8 @@ package lilypad.server.proxy.net;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.crypto.Cipher;
 
@@ -27,7 +27,7 @@ import io.netty.util.AttributeKey;
 public class ProxyInboundHandler extends SimpleChannelInboundHandler<Packet> {
 
 	private static final AttributeKey<ProxySession> proxySessionKey = new AttributeKey<ProxySession>("proxySession");
-	private Map<String, Long> throttle = new HashMap<String, Long>();
+	private Map<String, Long> throttle = new ConcurrentHashMap<String, Long>();
 
 	private ProxyConfig config;
 	private ProxySessionMapper sessionMapper;
