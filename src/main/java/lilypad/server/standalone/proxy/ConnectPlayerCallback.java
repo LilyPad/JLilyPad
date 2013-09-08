@@ -33,6 +33,7 @@ public class ConnectPlayerCallback implements IPlayerCallback {
 		try {
 			NotifyPlayerResult result = this.connect.request(new NotifyPlayerRequest(true, player)).await(1000L);
 			if(result == null) {
+				this.notifyPlayerLeave(player); // avoid a bug involving it taking more than 1000L to respond, we need to rewrite a lot of code to fully fix this
 				return -1;
 			}
 			if(result.getStatusCode() == StatusCode.SUCCESS) {
