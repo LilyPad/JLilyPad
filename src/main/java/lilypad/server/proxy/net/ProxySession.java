@@ -77,7 +77,8 @@ public class ProxySession {
 			this.inboundAuthenticate(true);
 			return;
 		}
-		final boolean ssl = httpsRequests.get() < maximumHttpsRequests;
+		//final boolean ssl = httpsRequests.get() < maximumHttpsRequests;
+		final boolean ssl = false;
 		URI uri;
 		try {
 			uri = MinecraftUtils.getSessionURI(this.username, SecurityUtils.shaHex(this.getServerKey().getBytes("ISO_8859_1"), this.sharedSecret, this.config.proxy_getKeyPair().getPublic().getEncoded()), ssl);
