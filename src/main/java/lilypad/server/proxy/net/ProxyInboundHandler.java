@@ -102,7 +102,7 @@ public class ProxyInboundHandler extends SimpleChannelInboundHandler<Packet> {
 						+ playerCount + '\0'
 						+ playerMaximum);
 				this.throttle.remove(this.getAddress(context.channel()));
-			} else if(packet.getOpcode() != 0xFA) {
+			} else {
 				proxySession.kick("Error: Protocol Mismatch (0x01))");
 			}
 			break;
