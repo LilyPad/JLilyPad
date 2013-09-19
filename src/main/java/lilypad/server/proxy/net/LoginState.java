@@ -6,6 +6,7 @@ public enum LoginState {
 	ENCRYPT_REQUEST,
 	AUTHENTICATE,
 	INITIALIZE,
-	CONNECTED;
+	CONNECTED,
+	PING;
 	
 }

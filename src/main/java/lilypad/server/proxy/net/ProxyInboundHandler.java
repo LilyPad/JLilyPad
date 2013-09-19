@@ -94,6 +94,7 @@ public class ProxyInboundHandler extends SimpleChannelInboundHandler<Packet> {
 					playerCount = this.sessionMapper.getAuthenticatedSize();
 					playerMaximum = this.config.proxy_getPlayerMaximum();
 				}
+				proxySession.setState(LoginState.PING);
 				proxySession.kick(CraftPacketConstants.magic + "1\0"
 						+ CraftPacketConstants.protocolVersion + '\0'
 						+ CraftPacketConstants.minecraftVersion + '\0'

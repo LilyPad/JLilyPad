@@ -85,8 +85,8 @@ public class ProxySession {
 			exception.printStackTrace();
 			return;
 		}
-		HttpGetClient authHttpGetClient = new AsyncHttpGetClient(uri, this.inboundChannel.eventLoop());
-		authHttpGetClient.registerListener(new HttpGetClientListener() {
+		this.authHttpGetClient = new AsyncHttpGetClient(uri, this.inboundChannel.eventLoop());
+		this.authHttpGetClient.registerListener(new HttpGetClientListener() {
 			public void httpResponse(HttpGetClient httpClient, String response) {
 				if(ssl) {
 					httpsRequests.decrementAndGet();
@@ -107,7 +107,7 @@ public class ProxySession {
 				inboundAuthenticate(false);
 			}
 		});
-		authHttpGetClient.run();
+		this.authHttpGetClient.run();
 		if(ssl) {
 			httpsRequests.incrementAndGet();
 		}
