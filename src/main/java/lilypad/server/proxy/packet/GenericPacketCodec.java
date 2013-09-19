@@ -198,9 +198,6 @@ public class GenericPacketCodec extends PacketCodec<GenericPacket> {
 				}
 				break;
 			}
-			if(position - start > CraftPacketConstants.maxPacketSize) {
-				throw new Exception("Max packet size passed, dropping");
-			}
 		}
 		return buffer.readBytes(position - start);
 	}

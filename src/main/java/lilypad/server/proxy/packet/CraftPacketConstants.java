@@ -5,7 +5,6 @@ public class CraftPacketConstants {
 	public static final String minecraftVersion = "1.6.2";
 	public static final int protocolVersion = 74;
 	public static final char magic = 167;
-	public static final int maxPacketSize = 1024 * 256;
 	public static final int[][] entityIdPositions = new int[256][];
 	static {
 		entityIdPositions[0x01] = new int[] {0};
