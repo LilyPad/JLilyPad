@@ -2,8 +2,8 @@ package lilypad.server.proxy.packet;
 
 public class CraftPacketConstants {
 
-	public static final String minecraftVersion = "1.6.2";
-	public static final int protocolVersion = 74;
+	public static final String minecraftVersion = "1.6.3";
+	public static final int protocolVersion = 77;
 	public static final char magic = 167;
 	public static final int[][] entityIdPositions = new int[256][];
 	static {
