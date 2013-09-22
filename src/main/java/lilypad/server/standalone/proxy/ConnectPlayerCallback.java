@@ -38,9 +38,9 @@ public class ConnectPlayerCallback implements IPlayerCallback {
 
 	public int notifyPlayerJoin(String player) {
 		try {
-			NotifyPlayerResult result = this.connect.request(new NotifyPlayerRequest(true, player)).await(1000L);
+			NotifyPlayerResult result = this.connect.request(new NotifyPlayerRequest(true, player)).await(10000L);
 			if(result == null) {
-				this.notifyPlayerLeave(player); // avoid a bug involving it taking more than 1000L to respond, we need to rewrite a lot of code to fully fix this
+				this.notifyPlayerLeave(player); // avoid a bug involving it taking more than 10000L to respond, we need to rewrite a lot of code to fully fix this
 				return -1;
 			}
 			if(result.getStatusCode() == StatusCode.SUCCESS) {
@@ -62,16 +62,16 @@ public class ConnectPlayerCallback implements IPlayerCallback {
 	}
 
 	public void notifyPlayerLeave(String player) {
-		try {
-			this.connect.request(new NotifyPlayerRequest(false, player));
-		} catch(RequestException exception) {
-			// ignore
-		}
 		this.localPlayersLock.lock();
 		try {
 			this.localPlayers.remove(player);
 		} finally {
 			this.localPlayersLock.unlock();
+		}
+		try {
+			this.connect.request(new NotifyPlayerRequest(false, player));
+		} catch(RequestException exception) {
+			// ignore
 		}
 	}
 
