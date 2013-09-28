@@ -130,6 +130,16 @@ public class ProxySession {
 			this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleFull()));
 			return;
 		}
+		String serverName = this.config.proxy_getDomains().get(this.serverHost.toLowerCase());
+		if(serverName == null && (serverName = this.config.proxy_getDomains().get("*")) == null) {
+			this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
+			return;
+		}
+		IServer server = this.config.proxy_getServerSource().getServerByName(serverName);
+		if(server == null) {
+			this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
+			return;
+		}
 		IPlayerCallback playerCallback = this.config.proxy_getPlayerCallback();
 		if(playerCallback != null) {
 			int notified = playerCallback.notifyPlayerJoin(this.username);
@@ -140,16 +150,6 @@ public class ProxySession {
 				this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
 				return;
 			}
-		}
-		String serverName = this.config.proxy_getDomains().get(this.serverHost.toLowerCase());
-		if(serverName == null && (serverName = this.config.proxy_getDomains().get("*")) == null) {
-			this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
-			return;
-		}
-		IServer server = this.config.proxy_getServerSource().getServerByName(serverName);
-		if(server == null) {
-			this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
-			return;
 		}
 		this.state = LoginState.INITIALIZE;
 		this.sessionMapper.markAuthenticated(this);
