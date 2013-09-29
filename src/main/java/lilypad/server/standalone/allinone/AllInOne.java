@@ -45,8 +45,11 @@ public class AllInOne {
 			try {
 				String scannerLine;
 				while((scannerLine = scanner.next()) != null) {
-					if(scannerLine.equals("halt")) {
+					/* These are the commands */
+					if(scannerLine.equals("stop")) {
 						break;
+					} else {
+						System.out.println("Command not recognized.");
 					}
 				}
 			} finally {
