@@ -1,8 +1,13 @@
 package lilypad.server.standalone.proxy;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.google.common.io.BaseEncoding;
+import com.google.common.io.Files;
 
 import lilypad.server.common.config.FileConfig;
 
@@ -15,6 +20,7 @@ public class ProxyConfig extends Config implements FileConfig {
 	private transient InetSocketAddress proxyBindAddress;
 	private transient InetSocketAddress proxyOutboundAddress;
 	private transient Map<String, String> domains;
+	private transient String favicon;
 	
 	public class Connect {
 		public String address = "127.0.0.1";
@@ -79,6 +85,23 @@ public class ProxyConfig extends Config implements FileConfig {
 
 	public String proxy_getPlayerMotd() {
 		return this.proxy.motd;
+	}
+	
+	public String proxy_getPlayerFavicon() {
+		if(this.favicon == null) {
+			File file = new File("server-icon.png");
+			if(file.exists()) {
+				try {
+					this.favicon = "data:image/png;base64," + BaseEncoding.base64().encode(Files.toByteArray(file));
+				} catch (IOException exception) {
+					exception.printStackTrace();
+				}
+			}
+			if(this.favicon == null) {
+				this.favicon = "";
+			}
+		}
+		return this.favicon;
 	}
 	
 	public int proxy_getPlayerMaximum() {

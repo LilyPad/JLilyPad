@@ -15,7 +15,7 @@ public class NotifyPlayer implements Query<NodeSession> {
 			return new ResultPacket(id, ConnectPacketConstants.statusInvalidRole);
 		}
 		boolean addOrRemove = payload.readBoolean();
-		String player = BufferUtils.readString16(payload);
+		String player = BufferUtils.readString(payload);
 		if(addOrRemove) {
 			if(!sender.addPlayer(player)) {
 				return new ResultPacket(id, ConnectPacketConstants.statusInvalidGeneric);

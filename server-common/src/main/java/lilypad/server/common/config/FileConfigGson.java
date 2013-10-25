@@ -6,12 +6,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import lilypad.server.common.util.GsonUtils;
 
 public class FileConfigGson<T extends IConfig> {
-
-	private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 	private String name;
 	private File configFile;
@@ -31,7 +28,7 @@ public class FileConfigGson<T extends IConfig> {
 		FileReader fileReader = null;
 		try {
 			fileReader = new FileReader(this.configFile);
-			T config = gson.fromJson(fileReader, this.configClass);
+			T config = GsonUtils.prettyGson().fromJson(fileReader, this.configClass);
 			if(config == null) {
 				return false;
 			}
@@ -55,7 +52,7 @@ public class FileConfigGson<T extends IConfig> {
 		FileWriter fileWriter = null;
 		try {
 			fileWriter = new FileWriter(this.configFile);
-			gson.toJson(this.config, fileWriter);
+			GsonUtils.prettyGson().toJson(this.config, fileWriter);
 			return true;
 		} catch (IOException exception) {
 			exception.printStackTrace();

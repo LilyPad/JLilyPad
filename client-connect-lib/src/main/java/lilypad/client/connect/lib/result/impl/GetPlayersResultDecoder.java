@@ -20,7 +20,7 @@ public class GetPlayersResultDecoder implements ResultDecoder<GetPlayersResult> 
 			Set<String> players = new HashSet<String>();
 			if(hasList) {
 				for(int i = 0; i < currentPlayers; i++) {
-					players.add(BufferUtils.readString16(buffer));
+					players.add(BufferUtils.readString(buffer));
 				}
 			}
 			return new GetPlayersResult(currentPlayers, maximumPlayers, players);

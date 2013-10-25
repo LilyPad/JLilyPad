@@ -13,12 +13,12 @@ public class ConnectPacketCodecRegistry extends PacketCodecRegistry {
 	public static final ConnectPacketCodecRegistry instance = new ConnectPacketCodecRegistry();
 	
 	public ConnectPacketCodecRegistry() {
-		this.submit(new KeepalivePacketCodec());
-		this.submit(new RequestPacketCodec());
-		this.submit(new ResultPacketCodec());
-		this.submit(new MessagePacketCodec());
-		this.submit(new RedirectPacketCodec());
-		this.submit(new ServerPacketCodec());
+		this.register(new KeepalivePacketCodec());
+		this.register(new RequestPacketCodec());
+		this.register(new ResultPacketCodec());
+		this.register(new MessagePacketCodec());
+		this.register(new RedirectPacketCodec());
+		this.register(new ServerPacketCodec());
 	}
 	
 }

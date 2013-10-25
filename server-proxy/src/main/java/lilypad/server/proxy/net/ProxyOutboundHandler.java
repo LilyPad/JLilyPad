@@ -7,18 +7,22 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.ReadTimeoutException;
-import lilypad.server.proxy.packet.CraftPacketConstants;
+import lilypad.server.proxy.packet.MinecraftPacketConstants;
+import lilypad.server.proxy.packet.StatefulPacketCodecProviderPair;
 import lilypad.packet.common.Packet;
-import lilypad.server.proxy.packet.impl.EncryptRequestPacket;
 import lilypad.server.proxy.packet.impl.HandshakePacket;
-import lilypad.server.proxy.packet.impl.StatusPacket;
+import lilypad.server.proxy.packet.impl.LoginStartPacket;
+import lilypad.server.proxy.packet.impl.LoginSuccessPacket;
+import lilypad.server.proxy.packet.impl.PlayDisconnectPacket;
+import lilypad.server.proxy.packet.state.LoginStateCodecProvider;
+import lilypad.server.proxy.packet.state.PlayStateCodecProvider;
 import lilypad.server.common.IServer;
 
 public class ProxyOutboundHandler extends SimpleChannelInboundHandler<Packet> {
 
 	private IServer server;
 	private ProxySession proxySession;
-	private LoginState state = LoginState.DISCONNECTED;
+	private ProxyState state = ProxyState.DISCONNECTED;
 
 	public ProxyOutboundHandler(IServer server, ProxySession proxySession) {
 		this.server = server;
@@ -34,23 +38,25 @@ public class ProxyOutboundHandler extends SimpleChannelInboundHandler<Packet> {
 		}
 		InetSocketAddress inboundAddress = this.proxySession.getInboundAddress();
 		InetSocketAddress outboundAddress = (InetSocketAddress) channel.remoteAddress();
-		this.state = LoginState.ENCRYPT_REQUEST;
-		channel.writeAndFlush(new HandshakePacket(CraftPacketConstants.protocolVersion, this.proxySession.getUsername(), server.getSecurityKey() + ";" + inboundAddress.getAddress().getHostAddress() + ";" + inboundAddress.getPort(), outboundAddress.getPort()));
+		channel.writeAndFlush(new HandshakePacket(MinecraftPacketConstants.protocolVersion, server.getSecurityKey() + ";" + inboundAddress.getAddress().getHostAddress() + ";" + inboundAddress.getPort() + ";" + proxySession.getUuid(), outboundAddress.getPort(), 2));
+		context.channel().attr(StatefulPacketCodecProviderPair.attributeKey).get().setState(LoginStateCodecProvider.instance);
+		channel.writeAndFlush(new LoginStartPacket(this.proxySession.getUsername()));
+		this.state = ProxyState.LOGIN;
 	}
 
 	@Override
 	public void channelInactive(ChannelHandlerContext context) throws Exception {
 		try {
-			if(this.state == LoginState.INITIALIZE) {
+			if(this.state == ProxyState.INIT) {
 				this.proxySession.setRedirecting(false);
 			}
-			if(this.state != LoginState.DISCONNECTED) {
+			if(this.state != ProxyState.DISCONNECTED) {
 				this.proxySession.outboundDisconnected(context.channel());
 			}
 		} finally {
 			this.server = null;
 			this.proxySession = null;
-			this.state = LoginState.DISCONNECTED;
+			this.state = ProxyState.DISCONNECTED;
 		}
 	}
 	
@@ -62,31 +68,25 @@ public class ProxyOutboundHandler extends SimpleChannelInboundHandler<Packet> {
 			return;
 		}
 		switch(this.state) {
-		case ENCRYPT_REQUEST:
-			if(packet.getOpcode() == EncryptRequestPacket.opcode) {
-				EncryptRequestPacket encryptRequestPacket = (EncryptRequestPacket) packet;
-				if(!encryptRequestPacket.getServerKey().equals("-")) {
-					this.proxySession.kickIfInitializing("Error: Protocol Mismatch (0x04)");
-					channel.close();
-					return;
-				}
-				this.state = LoginState.INITIALIZE;
+		case LOGIN:
+			if(packet.getOpcode() == LoginSuccessPacket.opcode) {
+				this.state = ProxyState.INIT;
 				this.proxySession.setRedirecting(true);
-				channel.writeAndFlush(new StatusPacket(0));
+				context.channel().attr(StatefulPacketCodecProviderPair.attributeKey).get().setState(PlayStateCodecProvider.instance);
 			} else {
-				this.proxySession.kickIfInitializing("Error: Protocol Mismatch (0x05)");
+				this.proxySession.disconnectIfInitializing("Error: Protocol Mismatch");
 				channel.close();
 			}
 			break;
-		case INITIALIZE:
-			if(packet.getOpcode() == 0x0D) {
-				this.state = LoginState.CONNECTED;
+		case INIT:
+			if(packet.getOpcode() == 0x08) {
+				this.state = ProxyState.CONNECTED;
 				this.proxySession.setOutboundChannel(this.server, channel);
 			}
 		case CONNECTED:
 			this.proxySession.outboundReceived(channel, packet);
-			if(packet.getOpcode() == 0xFF) {
-				this.state = LoginState.DISCONNECTED;
+			if(packet.getOpcode() == PlayDisconnectPacket.opcode) {
+				this.state = ProxyState.DISCONNECTED;
 			}
 			break;
 		default:

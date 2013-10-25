@@ -8,6 +8,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import lilypad.packet.common.PacketDecoder;
 import lilypad.packet.common.PacketEncoder;
+import lilypad.packet.common.VarIntFrameCodec;
 import lilypad.packet.connect.ConnectPacketCodecRegistry;
 import lilypad.server.connect.node.NodeHandler;
 import lilypad.server.connect.node.NodeSessionKeepalive;
@@ -40,6 +41,7 @@ public class ConnectService extends Service<ConnectConfig> implements IServerSou
 				.childHandler(new ChannelInitializer<SocketChannel>() {
 					public void initChannel(SocketChannel channel) throws Exception {
 						channel.pipeline().addLast(new ReadTimeoutHandler(10));
+						channel.pipeline().addLast(new VarIntFrameCodec());
 						channel.pipeline().addLast(new PacketEncoder(ConnectPacketCodecRegistry.instance));
 						channel.pipeline().addLast(new PacketDecoder(ConnectPacketCodecRegistry.instance));
 						channel.pipeline().addLast(nodeHandler);

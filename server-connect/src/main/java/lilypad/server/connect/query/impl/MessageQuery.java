@@ -21,9 +21,9 @@ public class MessageQuery implements Query<NodeSession> {
 		int recipientsCount = payload.readUnsignedShort();
 		Set<String> recipients = new HashSet<String>();
 		while(recipientsCount-- != 0) {
-			recipients.add(BufferUtils.readString16(payload));
+			recipients.add(BufferUtils.readString(payload));
 		}
-		MessagePacket message = new MessagePacket(sender.getIdentification(), BufferUtils.readString16(payload), payload.readBytes(payload.readUnsignedShort()));
+		MessagePacket message = new MessagePacket(sender.getIdentification(), BufferUtils.readString(payload), payload.readBytes(payload.readUnsignedShort()));
 		boolean messageSent = false;
 		if(recipients.isEmpty()) {
 			messageSent = true;

@@ -4,51 +4,35 @@ import lilypad.packet.common.Packet;
 
 public class HandshakePacket extends Packet {
 
-	public static final int opcode = 0x02;
+	public static final int opcode = 0x00;
 	
 	private int protocolVersion;
-	private String username;
-	private String serverHost;
+	private String serverAddress;
 	private int serverPort;
+	private int requestedState;
 	
-	public HandshakePacket(int protocolVersion, String username, String serverHost, int serverPort) {
+	public HandshakePacket(int protocolVersion, String serverAddress, int serverPort, int requestedState) {
 		super(opcode);
 		this.protocolVersion = protocolVersion;
-		this.username = username;
-		this.serverHost = serverHost;
+		this.serverAddress = serverAddress;
 		this.serverPort = serverPort;
+		this.requestedState = requestedState;
 	}
-	
+
 	public int getProtocolVersion() {
 		return this.protocolVersion;
 	}
-	
-	public void setProtocolVersion(int protocolVersion) {
-		this.protocolVersion = protocolVersion;
+
+	public String getServerAddress() {
+		return this.serverAddress;
 	}
-	
-	public String getUsername() {
-		return this.username;
-	}
-	
-	public void setUsername(String username) {
-		this.username = username;
-	}
-	
-	public String getServerHost() {
-		return this.serverHost;
-	}
-	
-	public void setServerHost(String serverHost) {
-		this.serverHost = serverHost;
-	}
-	
+
 	public int getServerPort() {
 		return this.serverPort;
 	}
-	
-	public void setServerPort(int serverPort) {
-		this.serverPort = serverPort;
-	}
 
+	public int getRequestedState() {
+		return this.requestedState;
+	}
+	
 }

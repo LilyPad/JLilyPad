@@ -20,6 +20,8 @@ public interface ProxyConfig extends IConfig {
 	
 	public String proxy_getPlayerMotd();
 	
+	public String proxy_getPlayerFavicon();
+	
 	public int proxy_getPlayerMaximum();
 	
 	public long proxy_getPlayerThrottle();

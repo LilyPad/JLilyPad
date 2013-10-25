@@ -13,8 +13,8 @@ public class AuthenticateQuery implements Query<NodeSession> {
 		if(sender.isAuthenticated()) {
 			return new ResultPacket(id, ConnectPacketConstants.statusInvalidRole);
 		}
-		String username = BufferUtils.readString16(payload);
-		String password = BufferUtils.readString16(payload);
+		String username = BufferUtils.readString(payload);
+		String password = BufferUtils.readString(payload);
 		if(!sender.getAuthenticator().authenticate(username, password, sender.getAuthenticationKey())) {
 			return new ResultPacket(id, ConnectPacketConstants.statusInvalidGeneric);
 		}

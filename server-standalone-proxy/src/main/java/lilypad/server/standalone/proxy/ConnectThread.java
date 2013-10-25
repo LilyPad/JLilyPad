@@ -8,7 +8,7 @@ import lilypad.client.connect.api.request.impl.GetKeyRequest;
 import lilypad.client.connect.api.result.impl.AsProxyResult;
 import lilypad.client.connect.api.result.impl.AuthenticateResult;
 import lilypad.client.connect.api.result.impl.GetKeyResult;
-import lilypad.server.proxy.packet.CraftPacketConstants;
+import lilypad.server.proxy.packet.MinecraftPacketConstants;
 
 public class ConnectThread implements Runnable {
 
@@ -95,7 +95,7 @@ public class ConnectThread implements Runnable {
 				}
 				
 				// asproxy
-				AsProxyResult asProxyResult = this.connect.request(new AsProxyRequest(this.proxyConfig.proxy_getBindAddress().getPort(), this.proxyConfig.proxy_getPlayerMotd(), CraftPacketConstants.minecraftVersion, this.proxyConfig.proxy_getPlayerMaximum())).await(2000L);
+				AsProxyResult asProxyResult = this.connect.request(new AsProxyRequest(this.proxyConfig.proxy_getBindAddress().getPort(), this.proxyConfig.proxy_getPlayerMotd(), MinecraftPacketConstants.minecraftVersion, this.proxyConfig.proxy_getPlayerMaximum())).await(2000L);
 				if(asProxyResult == null) {
 					this.connect.disconnect();
 					System.out.println("[Connect] Connection timed out while acquiring role, retrying");

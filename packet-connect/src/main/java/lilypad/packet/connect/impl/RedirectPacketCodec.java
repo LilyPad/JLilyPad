@@ -11,14 +11,14 @@ public class RedirectPacketCodec extends PacketCodec<RedirectPacket> {
 	}
 
 	public RedirectPacket decode(ByteBuf buffer) throws Exception {
-		String server = BufferUtils.readString16(buffer);
-		String player = BufferUtils.readString16(buffer);
+		String server = BufferUtils.readString(buffer);
+		String player = BufferUtils.readString(buffer);
 		return new RedirectPacket(server, player);
 	}
 
 	public void encode(RedirectPacket packet, ByteBuf buffer) {
-		BufferUtils.writeString16(packet.getServer(), buffer);
-		BufferUtils.writeString16(packet.getPlayer(), buffer);
+		BufferUtils.writeString(buffer, packet.getServer());
+		BufferUtils.writeString(buffer, packet.getPlayer());
 	}
 
 }

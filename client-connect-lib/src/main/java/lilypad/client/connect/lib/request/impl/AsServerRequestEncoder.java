@@ -12,7 +12,7 @@ public class AsServerRequestEncoder implements RequestEncoder<AsServerRequest> {
 		if(request.getIp() == null) {
 			buffer.writeShort(0);
 		} else {
-			BufferUtils.writeString16(request.getIp(), buffer);
+			BufferUtils.writeString(buffer, request.getIp());
 		}
 		buffer.writeShort(request.getPort());
 	}

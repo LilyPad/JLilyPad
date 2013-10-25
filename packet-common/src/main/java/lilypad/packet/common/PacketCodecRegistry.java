@@ -1,14 +1,14 @@
 package lilypad.packet.common;
 
-public abstract class PacketCodecRegistry {
+public class PacketCodecRegistry implements PacketCodecProvider {
 
 	private PacketCodec<?>[] packetCodecs = new PacketCodec<?>[256];
 	
-	public void submit(PacketCodec<?> packetCodec) {
+	public void register(PacketCodec<?> packetCodec) {
 		this.packetCodecs[packetCodec.getOpcode()] = packetCodec;
 	}
 	
-	public PacketCodec<?> getOpcode(int opcode) {
+	public PacketCodec<?> getByOpcode(int opcode) {
 		return this.packetCodecs[opcode];
 	}
 	

@@ -11,7 +11,7 @@ public class GetKeyResultDecoder implements ResultDecoder<GetKeyResult> {
 
 	public GetKeyResult decode(StatusCode statusCode, ByteBuf buffer) {
 		if(statusCode == StatusCode.SUCCESS) {
-			return new GetKeyResult(BufferUtils.readString16(buffer));
+			return new GetKeyResult(BufferUtils.readString(buffer));
 		} else {
 			return new GetKeyResult(statusCode);
 		}

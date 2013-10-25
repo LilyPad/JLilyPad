@@ -10,7 +10,7 @@ public class NotifyPlayerRequestEncoder implements RequestEncoder<NotifyPlayerRe
 
 	public void encode(NotifyPlayerRequest request, ByteBuf buffer) {
 		buffer.writeBoolean(request.isAdding());
-		BufferUtils.writeString16(request.getPlayer(), buffer);
+		BufferUtils.writeString(buffer, request.getPlayer());
 	}
 
 	public int getId() {

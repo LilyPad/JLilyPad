@@ -2,12 +2,12 @@ package lilypad.server.query.tcp.net;
 
 import java.util.Set;
 
+import lilypad.server.common.util.GsonUtils;
+
 import com.google.gson.Gson;
 
 @SuppressWarnings("unused")
 public class GsonResponse {
-
-	private static final Gson gson = new Gson();
 	
 	private int serverPort;
 	private int playerCount;
@@ -22,7 +22,7 @@ public class GsonResponse {
 	}
 	
 	public String toGson() {
-		return gson.toJson(this);
+		return GsonUtils.gson().toJson(this);
 	}
 	
 }

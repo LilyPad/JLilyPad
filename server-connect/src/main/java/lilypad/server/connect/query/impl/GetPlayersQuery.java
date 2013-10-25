@@ -24,7 +24,7 @@ public class GetPlayersQuery implements Query<NodeSession> {
 		response.writeShort(sender.getPlayable().getPlayerMaximum());
 		if(asList) {
 			for(String player : players) {
-				BufferUtils.writeString16(player, response);
+				BufferUtils.writeString(response, player);
 			}
 		}
 		return new ResultPacket(id, response);

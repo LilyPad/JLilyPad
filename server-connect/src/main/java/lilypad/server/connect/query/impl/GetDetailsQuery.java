@@ -18,10 +18,10 @@ public class GetDetailsQuery implements Query<NodeSession> {
 		}
 		ByteBuf response = Unpooled.buffer();
 		InetSocketAddress bindAddress = sender.getPlayable().getBindAddress();
-		BufferUtils.writeString16(bindAddress.getAddress().getHostAddress(), response);
+		BufferUtils.writeString(response, bindAddress.getAddress().getHostAddress());
 		response.writeShort(bindAddress.getPort());
-		BufferUtils.writeString16(sender.getPlayable().getMotd(), response);
-		BufferUtils.writeString16(sender.getPlayable().getVersion(), response);
+		BufferUtils.writeString(response, sender.getPlayable().getMotd());
+		BufferUtils.writeString(response, sender.getPlayable().getVersion());
 		return new ResultPacket(id, response);
 
 	}

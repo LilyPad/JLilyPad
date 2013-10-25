@@ -15,7 +15,7 @@ public class GetKeyQuery implements Query<NodeSession> {
 			return new ResultPacket(id, ConnectPacketConstants.statusInvalidRole);
 		}		
 		ByteBuf response = Unpooled.buffer();
-		BufferUtils.writeString16(sender.generateAuthenticationKey(), response);
+		BufferUtils.writeString(response, sender.generateAuthenticationKey());
 		return new ResultPacket(id, response);
 	}
 

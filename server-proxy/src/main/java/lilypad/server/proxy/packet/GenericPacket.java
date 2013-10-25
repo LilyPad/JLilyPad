@@ -20,7 +20,7 @@ public class GenericPacket extends Packet {
 		if(a == b) {
 			return;
 		}
-		int[] entityIdPositions = CraftPacketConstants.entityIdPositions[this.getOpcode()];
+		int[] entityIdPositions = MinecraftPacketConstants.entityIdPositions[this.getOpcode()];
 		if(entityIdPositions != null) {
 			int id;
 			for(int position : entityIdPositions) {

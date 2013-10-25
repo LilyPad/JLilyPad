@@ -29,9 +29,9 @@ public class ProxySessionMapper {
 		return this.authenticatedByUsername.size();
 	}
 	
-	public void kickAuthenticated(String message) {
+	public void disconnectAuthenticated(String reason) {
 		for(ProxySession proxySession : this.authenticatedByUsername.values()) {
-			proxySession.kick(message);
+			proxySession.disconnect(reason);
 		}
 	}
 

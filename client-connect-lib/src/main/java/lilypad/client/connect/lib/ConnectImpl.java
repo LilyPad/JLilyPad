@@ -47,6 +47,7 @@ import lilypad.client.connect.lib.result.FutureResultImpl;
 import lilypad.client.connect.lib.result.ResultDecoder;
 import lilypad.packet.common.PacketDecoder;
 import lilypad.packet.common.PacketEncoder;
+import lilypad.packet.common.VarIntFrameCodec;
 import lilypad.packet.connect.ConnectPacketCodecRegistry;
 import lilypad.packet.connect.impl.RequestPacket;
 
@@ -90,6 +91,7 @@ public class ConnectImpl implements Connect {
 				.handler(new ChannelInitializer<SocketChannel>() {
 					public void initChannel(SocketChannel channel) throws Exception {
 						channel.pipeline().addLast(new ReadTimeoutHandler(10));
+						channel.pipeline().addLast(new VarIntFrameCodec());
 						channel.pipeline().addLast(new PacketEncoder(ConnectPacketCodecRegistry.instance));
 						channel.pipeline().addLast(new PacketDecoder(ConnectPacketCodecRegistry.instance));
 						channel.pipeline().addLast(new ConnectNetworkHandler(ConnectImpl.this));

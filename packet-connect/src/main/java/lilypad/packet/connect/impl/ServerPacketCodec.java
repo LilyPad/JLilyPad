@@ -12,9 +12,9 @@ public class ServerPacketCodec extends PacketCodec<ServerPacket> {
 
 	public ServerPacket decode(ByteBuf buffer) throws Exception {
 		boolean addOrRemove = buffer.readBoolean();
-		String server = BufferUtils.readString16(buffer);
+		String server = BufferUtils.readString(buffer);
 		if(addOrRemove) {
-		 	return new ServerAddPacket(server, BufferUtils.readString16(buffer), BufferUtils.readString16(buffer), buffer.readUnsignedShort());
+		 	return new ServerAddPacket(server, BufferUtils.readString(buffer), BufferUtils.readString(buffer), buffer.readUnsignedShort());
 		}
 		return new ServerPacket(server);
 	}
@@ -22,11 +22,11 @@ public class ServerPacketCodec extends PacketCodec<ServerPacket> {
 	public void encode(ServerPacket packet, ByteBuf buffer) {
 		boolean addOrRemove = packet.isAdding();
 		buffer.writeBoolean(addOrRemove);
-		BufferUtils.writeString16(packet.getServer(), buffer);
+		BufferUtils.writeString(buffer, packet.getServer());
 		if(addOrRemove) {
 			ServerAddPacket addPacket = (ServerAddPacket) packet;
-			BufferUtils.writeString16(addPacket.getSecurityKey(), buffer);
-			BufferUtils.writeString16(addPacket.getAddress(), buffer);
+			BufferUtils.writeString(buffer, addPacket.getSecurityKey());
+			BufferUtils.writeString(buffer, addPacket.getAddress());
 			buffer.writeShort(addPacket.getPort());
 		}
 	}

@@ -12,7 +12,7 @@ public class MinecraftUtils {
 			return null;
 		}
 		try {
-			return new URI((ssl ? "https" : "http") + "://session.minecraft.net/game/checkserver.jsp?user=" + URLEncoder.encode(username, "UTF-8") + "&serverId=" + URLEncoder.encode(serverKey, "UTF-8"));
+			return new URI((ssl ? "https" : "http") + "://sessionserver.mojang.com/session/minecraft/hasJoined?username=" + URLEncoder.encode(username, "UTF-8") + "&serverId=" + URLEncoder.encode(serverKey, "UTF-8"));
 		} catch(UnsupportedEncodingException exception) {
 			exception.printStackTrace();
 		} catch(URISyntaxException exception) {

@@ -12,7 +12,7 @@ public class GetWhoamiQuery implements Query<NodeSession> {
 
 	public ResultPacket execute(NodeSession sender, int id, ByteBuf payload) {
 		ByteBuf response = Unpooled.buffer();
-		BufferUtils.writeString16(sender.getIdentification(), response);
+		BufferUtils.writeString(response, sender.getIdentification());
 		return new ResultPacket(id, response);
 	}
 

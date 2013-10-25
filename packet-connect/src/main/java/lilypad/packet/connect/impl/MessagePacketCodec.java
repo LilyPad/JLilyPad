@@ -11,15 +11,15 @@ public class MessagePacketCodec extends PacketCodec<MessagePacket> {
 	}
 
 	public MessagePacket decode(ByteBuf buffer) throws Exception {
-		String sender = BufferUtils.readString16(buffer);
-		String channel = BufferUtils.readString16(buffer);
+		String sender = BufferUtils.readString(buffer);
+		String channel = BufferUtils.readString(buffer);
 		ByteBuf payload = buffer.readBytes(buffer.readUnsignedShort());
 		return new MessagePacket(sender, channel, payload);
 	}
 
 	public void encode(MessagePacket packet, ByteBuf buffer) {
-		BufferUtils.writeString16(packet.getSender(), buffer);
-		BufferUtils.writeString16(packet.getChannel(), buffer);
+		BufferUtils.writeString(buffer, packet.getSender());
+		BufferUtils.writeString(buffer, packet.getChannel());
 		ByteBuf payload = packet.getPayload();
 		buffer.writeShort(payload.readableBytes());
 		buffer.writeBytes(payload, payload.readerIndex(), payload.readableBytes());

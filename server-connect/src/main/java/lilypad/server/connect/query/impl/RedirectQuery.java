@@ -13,8 +13,8 @@ public class RedirectQuery implements Query<NodeSession> {
 		if(!sender.isAuthenticated()) {
 			return new ResultPacket(id, ConnectPacketConstants.statusInvalidRole);
 		}
-		String serverName = BufferUtils.readString16(payload);
-		String playerName = BufferUtils.readString16(payload);
+		String serverName = BufferUtils.readString(payload);
+		String playerName = BufferUtils.readString(payload);
 		NodeSession server = sender.getConnectService().getSessionMapper().getServerByUsername(serverName);
 		if(server == null) {
 			return new ResultPacket(id, ConnectPacketConstants.statusInvalidGeneric);

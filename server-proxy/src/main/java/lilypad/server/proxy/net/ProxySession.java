@@ -3,30 +3,40 @@ package lilypad.server.proxy.net;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.UUID;
 
+import lilypad.packet.common.Packet;
 import lilypad.packet.common.PacketDecoder;
 import lilypad.packet.common.PacketEncoder;
+import lilypad.packet.common.VarIntFrameCodec;
 import lilypad.server.proxy.ProxyConfig;
-import lilypad.server.proxy.http.HttpGetClient;
-import lilypad.server.proxy.http.HttpGetClientListener;
-import lilypad.server.proxy.http.impl.AsyncHttpGetClient;
-import lilypad.server.proxy.packet.CraftPacketCodecRegistry;
-import lilypad.server.proxy.packet.CraftPacketConstants;
+import lilypad.server.proxy.net.http.HttpGetClient;
+import lilypad.server.proxy.net.http.HttpGetClientListener;
+import lilypad.server.proxy.net.http.impl.AsyncHttpGetClient;
+import lilypad.server.proxy.packet.MinecraftPacketConstants;
 import lilypad.server.proxy.packet.GenericPacket;
-import lilypad.packet.common.Packet;
-import lilypad.server.proxy.packet.impl.KickPacket;
-import lilypad.server.proxy.packet.impl.LoginPacket;
-import lilypad.server.proxy.packet.impl.PlayerListPacket;
-import lilypad.server.proxy.packet.impl.RespawnPacket;
-import lilypad.server.proxy.packet.impl.ScoreboardObjectivePacket;
-import lilypad.server.proxy.packet.impl.TeamPacket;
+import lilypad.server.proxy.packet.StatefulPacketCodecProviderPair;
+import lilypad.server.proxy.packet.StatefulPacketCodecProviderPair.StateCodecProvider;
+import lilypad.server.proxy.packet.impl.LoginDisconnectPacket;
+import lilypad.server.proxy.packet.impl.LoginSuccessPacket;
+import lilypad.server.proxy.packet.impl.PlayDisconnectPacket;
+import lilypad.server.proxy.packet.impl.PlayJoinGamePacket;
+import lilypad.server.proxy.packet.impl.PlayPlayerListPacket;
+import lilypad.server.proxy.packet.impl.PlayRespawnPacket;
+import lilypad.server.proxy.packet.impl.PlayScoreObjectivePacket;
+import lilypad.server.proxy.packet.impl.PlayTeamPacket;
+import lilypad.server.proxy.packet.state.HandshakeStateCodecProvider;
+import lilypad.server.proxy.packet.state.LoginStateCodecProvider;
+import lilypad.server.proxy.packet.state.PlayStateCodecProvider;
 import lilypad.server.proxy.util.MinecraftUtils;
 import lilypad.server.common.IPlayerCallback;
 import lilypad.server.common.IServer;
+import lilypad.server.common.util.GsonUtils;
 import lilypad.server.common.util.SecurityUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -39,22 +49,20 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 
 public class ProxySession {
-
-	private static final AtomicInteger httpsRequests = new AtomicInteger(0);
-	private static final int maximumHttpsRequests = 16;
-
+	
 	private ProxyConfig config;
 	private ProxySessionMapper sessionMapper;
 
 	private Channel inboundChannel;
 	private Channel outboundChannel;
 	private HttpGetClient authHttpGetClient;
-	private LoginState state = LoginState.DISCONNECTED;
+	private ProxyState state = ProxyState.DISCONNECTED;
 
 	private String username;
-	private String serverHost;
+	private String uuid;
+	private String serverAddress;
 	private String serverKey;
-	private byte[] serverVerification;
+	private byte[] verifyToken;
 	private byte[] sharedSecret;
 
 	private IServer server;
@@ -73,45 +81,37 @@ public class ProxySession {
 	}
 
 	public void inboundAuthenticate() {
-		if(this.serverKey.equals("-")) {
-			this.inboundAuthenticate(true);
-			return;
-		}
-		//final boolean ssl = httpsRequests.get() < maximumHttpsRequests;
-		final boolean ssl = false;
 		URI uri;
 		try {
-			uri = MinecraftUtils.getSessionURI(this.username, SecurityUtils.shaHex(this.getServerKey().getBytes("ISO_8859_1"), this.sharedSecret, this.config.proxy_getKeyPair().getPublic().getEncoded()), ssl);
+			uri = MinecraftUtils.getSessionURI(this.username, SecurityUtils.shaHex(this.getServerKey().getBytes("ISO_8859_1"), this.sharedSecret, this.config.proxy_getKeyPair().getPublic().getEncoded()), true);
 		} catch(UnsupportedEncodingException exception) {
 			exception.printStackTrace();
 			return;
 		}
 		this.authHttpGetClient = new AsyncHttpGetClient(uri, this.inboundChannel.eventLoop());
 		this.authHttpGetClient.registerListener(new HttpGetClientListener() {
+			@SuppressWarnings("unchecked")
 			public void httpResponse(HttpGetClient httpClient, String response) {
-				if(ssl) {
-					httpsRequests.decrementAndGet();
-				}
-				if(response.trim().equals("YES")) {
-					inboundAuthenticate(true);
-				} else {
+				Map<String, String> jsonResponse;
+				jsonResponse = GsonUtils.gson().fromJson(response, HashMap.class);
+				if(jsonResponse == null) {
 					inboundAuthenticate(false);
+					return;
 				}
-
+				if(!jsonResponse.containsKey("id")) {
+					inboundAuthenticate(false);
+					return;
+				}
+				uuid = jsonResponse.get("id");
+				inboundAuthenticate(true);
 			}
 			public void exceptionCaught(HttpGetClient httpClient, Throwable throwable) {
-				if(ssl) {
-					httpsRequests.decrementAndGet();
-				}
 				System.out.println("[LilyPad] error: Authentication to Minecraft.net Failed");
 				throwable.printStackTrace();
 				inboundAuthenticate(false);
 			}
 		});
 		this.authHttpGetClient.run();
-		if(ssl) {
-			httpsRequests.incrementAndGet();
-		}
 	}
 
 	public void inboundAuthenticate(boolean success) {
@@ -119,39 +119,41 @@ public class ProxySession {
 			return;
 		}
 		if(!success) {
-			this.kick("Error: Authentication to Minecraft.net Failed");
+			this.disconnect("Error: Authentication to Minecraft.net Failed");
 			return;
 		}
 		if(this.sessionMapper.hasAuthenticatedByUsername(this.username)) {
-			this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleLoggedIn()));
+			this.disconnect(MinecraftPacketConstants.colorize(this.config.proxy_getLocaleLoggedIn()));
 			return;
 		}
 		if(this.config.proxy_getPlayerMaximum() > 1 && this.sessionMapper.getAuthenticatedSize() >= this.config.proxy_getPlayerMaximum()) {
-			this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleFull()));
+			this.disconnect(MinecraftPacketConstants.colorize(this.config.proxy_getLocaleFull()));
 			return;
 		}
-		String serverName = this.config.proxy_getDomains().get(this.serverHost.toLowerCase());
+		String serverName = this.config.proxy_getDomains().get(this.serverAddress.toLowerCase());
 		if(serverName == null && (serverName = this.config.proxy_getDomains().get("*")) == null) {
-			this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
+			this.disconnect(MinecraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
 			return;
 		}
 		IServer server = this.config.proxy_getServerSource().getServerByName(serverName);
 		if(server == null) {
-			this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
+			this.disconnect(MinecraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
 			return;
 		}
 		IPlayerCallback playerCallback = this.config.proxy_getPlayerCallback();
 		if(playerCallback != null) {
-			int notified = playerCallback.notifyPlayerJoin(this.username);
-			if(notified == 0) {
-				this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleLoggedIn()));
+			int result = playerCallback.notifyPlayerJoin(this.username);
+			if(result == 0) {
+				this.disconnect(MinecraftPacketConstants.colorize(this.config.proxy_getLocaleLoggedIn()));
 				return;
-			} else if(notified == -1) {
-				this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
+			} else if(result == -1) {
+				this.disconnect(MinecraftPacketConstants.colorize(this.config.proxy_getLocaleOffline()));
 				return;
 			}
 		}
-		this.state = LoginState.INITIALIZE;
+		this.state = ProxyState.INIT;
+		this.inboundChannel.writeAndFlush(new LoginSuccessPacket(UUID.randomUUID().toString(), this.username));
+		this.inboundChannel.attr(StatefulPacketCodecProviderPair.attributeKey).get().setState(PlayStateCodecProvider.instance);
 		this.sessionMapper.markAuthenticated(this);
 		this.redirect(server);
 	}
@@ -195,11 +197,11 @@ public class ProxySession {
 			this.inboundChannel = null;
 			this.outboundChannel = null;
 			this.authHttpGetClient = null;
-			this.state = LoginState.DISCONNECTED;
+			this.state = ProxyState.DISCONNECTED;
 			this.username = null;
-			this.serverHost = null;
+			this.serverAddress = null;
 			this.serverKey = null;
-			this.serverVerification = null;
+			this.verifyToken = null;
 			this.sharedSecret = null;
 			this.server = null;
 			this.redirecting = false;
@@ -223,7 +225,7 @@ public class ProxySession {
 		if(this.outboundChannel != channel) {
 			return;
 		}
-		this.kick(CraftPacketConstants.colorize(this.config.proxy_getLocaleLostConn()));
+		this.disconnect(MinecraftPacketConstants.colorize(this.config.proxy_getLocaleLostConn()));
 	}
 
 	public void outboundReceived(Channel channel, Packet packet) {
@@ -231,65 +233,64 @@ public class ProxySession {
 			return;
 		}
 		switch(packet.getOpcode()) {
-		case LoginPacket.opcode:
-			LoginPacket loginPacket = (LoginPacket) packet;
+		case PlayJoinGamePacket.opcode:
+			PlayJoinGamePacket playJoinGamePacket = (PlayJoinGamePacket) packet;
 			if(this.config.proxy_isPlayerTab()) {
-				loginPacket.setMaxPlayers(60);
+				playJoinGamePacket.setMaxPlayers(60);
 			} else {
-				loginPacket.setMaxPlayers(0);
+				playJoinGamePacket.setMaxPlayers(0);
 			}
-			this.serverEntityId = loginPacket.getEntityId();
-			if(this.state == LoginState.INITIALIZE) {
-				this.clientEntityId = loginPacket.getEntityId();
+			this.serverEntityId = playJoinGamePacket.getEntityId();
+			if(this.state == ProxyState.INIT) {
+				this.clientEntityId = playJoinGamePacket.getEntityId();
 			} else {
-				this.inboundChannel.write(new RespawnPacket(loginPacket.getDimension() == 0 ? 1 : 0, 2, 0, loginPacket.getHeight(), "DEFAULT"));
-				this.inboundChannel.write(new RespawnPacket(loginPacket.getDimension(), loginPacket.getDifficulty(), loginPacket.getGamemode(), loginPacket.getHeight(), loginPacket.getLevelType()));
+				this.inboundChannel.write(new PlayRespawnPacket(playJoinGamePacket.getDimension() == 0 ? 1 : 0, 2, 0, "DEFAULT"));
+				this.inboundChannel.write(new PlayRespawnPacket(playJoinGamePacket.getDimension(), playJoinGamePacket.getDifficulty(), playJoinGamePacket.getGamemode(), playJoinGamePacket.getLevelType()));
 				Iterator<String> playersTabbed = this.playersTabbed.iterator();
 				while(playersTabbed.hasNext()) {
-					this.inboundChannel.write(new PlayerListPacket(playersTabbed.next(), false, 0));
+					this.inboundChannel.write(new PlayPlayerListPacket(playersTabbed.next(), false, 0));
 					playersTabbed.remove();
 				}
 				Iterator<String> scoreboards = this.scoreboards.iterator();
 				while(scoreboards.hasNext()) {
-					this.inboundChannel.write(new ScoreboardObjectivePacket(scoreboards.next(), "", (byte) 1));
+					this.inboundChannel.write(new PlayScoreObjectivePacket(scoreboards.next(), "", 1));
 					scoreboards.remove();
 				}
 				Iterator<String> teams = this.teams.iterator();
 				while(teams.hasNext()) {
-					this.inboundChannel.write(new TeamPacket(teams.next(), (byte) 1, null));
+					this.inboundChannel.write(new PlayTeamPacket(teams.next(), 1, null, null, null, 0, null));
 					teams.remove();
 				}
 				this.inboundChannel.flush();
 				return;
 			}
 			break;
-		case PlayerListPacket.opcode:
-			PlayerListPacket playerListPacket = (PlayerListPacket) packet;
-			if(playerListPacket.isOnline()) {
-				this.playersTabbed.add(playerListPacket.getPlayer());
+		case PlayPlayerListPacket.opcode:
+			PlayPlayerListPacket playPlayerListPacket = (PlayPlayerListPacket) packet;
+			if(playPlayerListPacket.isOnline()) {
+				this.playersTabbed.add(playPlayerListPacket.getName());
 			} else {
-				this.playersTabbed.remove(playerListPacket.getPlayer());
+				this.playersTabbed.remove(playPlayerListPacket.getName());
 			}
 			break;
-		case ScoreboardObjectivePacket.opcode:
-			ScoreboardObjectivePacket scoreboardObjectivePacket = (ScoreboardObjectivePacket) packet;
-			if(scoreboardObjectivePacket.isCreating()) {
-				this.scoreboards.add(scoreboardObjectivePacket.getName());
-			} else if(scoreboardObjectivePacket.isRemoving()) {
-				this.scoreboards.remove(scoreboardObjectivePacket.getName());
+		case PlayScoreObjectivePacket.opcode:
+			PlayScoreObjectivePacket playScoreObjectivePacket = (PlayScoreObjectivePacket) packet;
+			if(playScoreObjectivePacket.isCreating()) {
+				this.scoreboards.add(playScoreObjectivePacket.getName());
+			} else if(playScoreObjectivePacket.isRemoving()) {
+				this.scoreboards.remove(playScoreObjectivePacket.getName());
 			}
 			break;
-		case TeamPacket.opcode:
-			TeamPacket teamPacket = (TeamPacket) packet;
+		case PlayTeamPacket.opcode:
+			PlayTeamPacket teamPacket = (PlayTeamPacket) packet;
 			if(teamPacket.isCreating()) {
 				this.teams.add(teamPacket.getName());
 			} else if(teamPacket.isRemoving()) {
 				this.teams.remove(teamPacket.getName());
 			}
 			break;
-		case KickPacket.opcode:
-			KickPacket kickPacket = (KickPacket) packet;
-			this.kick(kickPacket.getMessage());
+		case PlayDisconnectPacket.opcode:
+			this.disconnect(((PlayDisconnectPacket) packet).getReason());
 			return;
 		default:
 			if(packet instanceof GenericPacket) {
@@ -308,9 +309,12 @@ public class ProxySession {
 		.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
 		.handler(new ChannelInitializer<SocketChannel>() {
 			public void initChannel(SocketChannel channel) throws Exception {
+				StatefulPacketCodecProviderPair packetCodecProvider = new StatefulPacketCodecProviderPair(HandshakeStateCodecProvider.instance);
+				channel.attr(StatefulPacketCodecProviderPair.attributeKey).set(packetCodecProvider);
 				channel.pipeline().addLast(new ReadTimeoutHandler(30));
-				channel.pipeline().addLast(new PacketEncoder(CraftPacketCodecRegistry.instance));
-				channel.pipeline().addLast(new PacketDecoder(CraftPacketCodecRegistry.instance));
+				channel.pipeline().addLast(new VarIntFrameCodec());
+				channel.pipeline().addLast(new PacketEncoder(packetCodecProvider.getServerBound()));
+				channel.pipeline().addLast(new PacketDecoder(packetCodecProvider.getClientBound()));
 				channel.pipeline().addLast(new ProxyOutboundHandler(server, ProxySession.this));
 			}
 		})
@@ -319,30 +323,29 @@ public class ProxySession {
 				if(future.isSuccess()) {
 					return;
 				}
-				kickIfInitializing("Error: Internal Mismatch (0x02)");
+				disconnectIfInitializing("Error: Internal Mismatch (0x02)");
 			}
 		});
 	}
 
-	public void kick(String message) {
+	public void disconnect(String reason) {
 		if(!this.isInboundConnected()) {
 			return;
 		}
-		this.inboundChannel.writeAndFlush(new KickPacket(message)).addListener(new ChannelFutureListener() {
-			public void operationComplete(ChannelFuture future) throws Exception {
-				if(!isInboundConnected()) {
-					return;
-				}
-				inboundChannel.close();
-			}
-		});
+		StateCodecProvider stateCodecProvider = this.inboundChannel.attr(StatefulPacketCodecProviderPair.attributeKey).get().getState();
+		if(stateCodecProvider == PlayStateCodecProvider.instance) {
+			this.inboundChannel.writeAndFlush(new PlayDisconnectPacket(GsonUtils.gson().toJson(reason)));
+		} else if(stateCodecProvider == LoginStateCodecProvider.instance) {
+			this.inboundChannel.writeAndFlush(new LoginDisconnectPacket(GsonUtils.gson().toJson(reason)));
+		}
+		this.inboundChannel.close();
 	}
 
-	public void kickIfInitializing(String message) {
-		if(this.state != LoginState.INITIALIZE) {
+	public void disconnectIfInitializing(String message) {
+		if(this.state != ProxyState.INIT) {
 			return;
 		}
-		this.kick(message);
+		this.disconnect(message);
 	}
 
 	public Channel getInboundChannel() {
@@ -363,7 +366,7 @@ public class ProxySession {
 
 	public void setOutboundChannel(IServer server, Channel channel) {
 		Channel oldOutboundChannel = this.outboundChannel;
-		this.state = LoginState.CONNECTED;
+		this.state = ProxyState.CONNECTED;
 		this.server = server;
 		this.outboundChannel = channel;
 		this.redirecting = false;
@@ -372,15 +375,15 @@ public class ProxySession {
 		}
 	}
 
-	public LoginState getState() {
+	public ProxyState getState() {
 		return this.state;
 	}
 
 	public boolean isAuthenticated() {
-		return this.state == LoginState.CONNECTED || this.state == LoginState.INITIALIZE;
+		return this.state == ProxyState.CONNECTED || this.state == ProxyState.INIT;
 	}
 
-	public void setState(LoginState state) {
+	public void setState(ProxyState state) {
 		this.state = state;
 	}
 
@@ -391,13 +394,21 @@ public class ProxySession {
 	public void setUsername(String username) {
 		this.username = username;
 	}
-
-	public String getServerIp() {
-		return this.serverHost;
+	
+	public String getUuid() {
+		return this.uuid;
+	}
+	
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 
-	public void setServerHost(String serverIp) {
-		this.serverHost = serverIp;
+	public String getServerAddress() {
+		return this.serverAddress;
+	}
+
+	public void setServerAddress(String serverAddress) {
+		this.serverAddress = serverAddress;
 	}
 
 	public String getServerKey() {
@@ -405,19 +416,15 @@ public class ProxySession {
 	}
 
 	public String genServerKey() {
-		if(this.config.proxy_isPlayerAuthenticate()) {
-			return this.serverKey = SecurityUtils.randomHash();
-		} else {
-			return this.serverKey = "-";
-		}
+		return this.serverKey = SecurityUtils.randomHash();
 	}
 
-	public byte[] getServerVerification() {
-		return this.serverVerification;
+	public byte[] getVerifyToken() {
+		return this.verifyToken;
 	}
 
-	public byte[] genServerVerification() {
-		return this.serverVerification = SecurityUtils.randomBytes(4);
+	public byte[] genVerifyToken() {
+		return this.verifyToken = SecurityUtils.randomBytes(4);
 	}
 
 	public byte[] getSharedSecret() {

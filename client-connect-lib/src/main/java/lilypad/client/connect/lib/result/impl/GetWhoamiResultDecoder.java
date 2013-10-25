@@ -11,7 +11,7 @@ public class GetWhoamiResultDecoder implements ResultDecoder<GetWhoamiResult> {
 
 	public GetWhoamiResult decode(StatusCode statusCode, ByteBuf buffer) {
 		if(statusCode == StatusCode.SUCCESS) {
-			return new GetWhoamiResult(BufferUtils.readString16(buffer));
+			return new GetWhoamiResult(BufferUtils.readString(buffer));
 		} else {
 			return new GetWhoamiResult(statusCode);
 		}

@@ -10,13 +10,13 @@ public class AsProxyRequestEncoder implements RequestEncoder<AsProxyRequest> {
 
 	public void encode(AsProxyRequest request, ByteBuf buffer) {
 		if(request.getIp() != null) {
-			BufferUtils.writeString16(request.getIp(), buffer);
+			BufferUtils.writeString(buffer, request.getIp());
 		} else {
 			buffer.writeShort(0);
 		}
 		buffer.writeShort(request.getPort());
-		BufferUtils.writeString16(request.getMotd(), buffer);
-		BufferUtils.writeString16(request.getVersion(), buffer);
+		BufferUtils.writeString(buffer, request.getMotd());
+		BufferUtils.writeString(buffer, request.getVersion());
 		buffer.writeShort(request.getMaximumPlayers());
 	}
 

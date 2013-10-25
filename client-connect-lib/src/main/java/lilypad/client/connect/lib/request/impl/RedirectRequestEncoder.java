@@ -9,8 +9,8 @@ import lilypad.packet.connect.ConnectPacketConstants;
 public class RedirectRequestEncoder implements RequestEncoder<RedirectRequest> {
 
 	public void encode(RedirectRequest request, ByteBuf buffer) {
-		BufferUtils.writeString16(request.getServer(), buffer);
-		BufferUtils.writeString16(request.getPlayer(), buffer);
+		BufferUtils.writeString(buffer, request.getServer());
+		BufferUtils.writeString(buffer, request.getPlayer());
 	}
 
 	public int getId() {

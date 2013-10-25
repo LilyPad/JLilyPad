@@ -11,7 +11,7 @@ public class AsServerResultDecoder implements ResultDecoder<AsServerResult> {
 
 	public AsServerResult decode(StatusCode statusCode, ByteBuf buffer) {
 		if(statusCode == StatusCode.SUCCESS) {
-			return new AsServerResult(BufferUtils.readString16(buffer));
+			return new AsServerResult(BufferUtils.readString(buffer));
 		} else {
 			return new AsServerResult(statusCode);
 		}

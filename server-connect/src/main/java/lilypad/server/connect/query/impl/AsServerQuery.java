@@ -17,7 +17,7 @@ public class AsServerQuery implements Query<NodeSession> {
 		if(sender.getRole() != NodeSessionRole.AUTHENTICATED) {
 			return new ResultPacket(id, ConnectPacketConstants.statusInvalidRole);
 		}
-		String ip = BufferUtils.readString16(payload);
+		String ip = BufferUtils.readString(payload);
 		if(ip.length() == 0) {
 			ip = sender.getAddress().getAddress().getHostAddress();
 		}
@@ -25,7 +25,7 @@ public class AsServerQuery implements Query<NodeSession> {
 			return new ResultPacket(id, ConnectPacketConstants.statusInvalidGeneric);
 		}
 		ByteBuf response = Unpooled.buffer();
-		BufferUtils.writeString16(sender.getSecurityKey(), response);
+		BufferUtils.writeString(response, sender.getSecurityKey());
 		return new ResultPacket(id, response);
 	}
 

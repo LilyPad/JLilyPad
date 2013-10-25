@@ -12,11 +12,14 @@ import java.util.Set;
 
 import lilypad.packet.common.PacketDecoder;
 import lilypad.packet.common.PacketEncoder;
+import lilypad.packet.common.VarIntFrameCodec;
+import lilypad.server.proxy.net.LegacyPingDecoder;
 import lilypad.server.proxy.net.ProxyInboundHandler;
 import lilypad.server.proxy.net.ProxySession;
 import lilypad.server.proxy.net.ProxySessionMapper;
-import lilypad.server.proxy.packet.CraftPacketCodecRegistry;
-import lilypad.server.proxy.packet.CraftPacketConstants;
+import lilypad.server.proxy.packet.MinecraftPacketConstants;
+import lilypad.server.proxy.packet.StatefulPacketCodecProviderPair;
+import lilypad.server.proxy.packet.state.HandshakeStateCodecProvider;
 import lilypad.server.common.service.Service;
 import lilypad.server.common.IPlayable;
 import lilypad.server.common.IServer;
@@ -41,9 +44,13 @@ public class ProxyService extends Service<ProxyConfig> implements IPlayable {
 				.localAddress(config.proxy_getBindAddress())
 				.childHandler(new ChannelInitializer<SocketChannel>() {
 					public void initChannel(SocketChannel channel) throws Exception {
+						StatefulPacketCodecProviderPair packetCodecProvider = new StatefulPacketCodecProviderPair(HandshakeStateCodecProvider.instance);
+						channel.attr(StatefulPacketCodecProviderPair.attributeKey).set(packetCodecProvider);
 						channel.pipeline().addLast(new ReadTimeoutHandler(30));
-						channel.pipeline().addLast(new PacketEncoder(CraftPacketCodecRegistry.instance));
-						channel.pipeline().addLast(new PacketDecoder(CraftPacketCodecRegistry.instance));
+						channel.pipeline().addLast(new LegacyPingDecoder(ProxyService.this.config, proxySessionMapper));
+						channel.pipeline().addLast(new VarIntFrameCodec());
+						channel.pipeline().addLast(new PacketEncoder(packetCodecProvider.getClientBound()));
+						channel.pipeline().addLast(new PacketDecoder(packetCodecProvider.getServerBound()));
 						channel.pipeline().addLast(proxyInboundHandler);
 					}
 		});
@@ -54,7 +61,7 @@ public class ProxyService extends Service<ProxyConfig> implements IPlayable {
 	public void disable() {
 		try {
 			if(this.proxySessionMapper != null) {
-				this.proxySessionMapper.kickAuthenticated(CraftPacketConstants.colorize(this.config.proxy_getLocaleShutdown()));
+				this.proxySessionMapper.disconnectAuthenticated(MinecraftPacketConstants.colorize(this.config.proxy_getLocaleShutdown()));
 			}
 			if(this.parentEventGroup != null) {
 				this.parentEventGroup.shutdownGracefully();
@@ -107,7 +114,7 @@ public class ProxyService extends Service<ProxyConfig> implements IPlayable {
 	}
 
 	public String getVersion() {
-		return CraftPacketConstants.minecraftVersion;
+		return MinecraftPacketConstants.minecraftVersion;
 	}
 	
 }

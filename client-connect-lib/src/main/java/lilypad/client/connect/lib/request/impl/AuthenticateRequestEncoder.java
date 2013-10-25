@@ -9,8 +9,8 @@ import lilypad.packet.connect.ConnectPacketConstants;
 public class AuthenticateRequestEncoder implements RequestEncoder<AuthenticateRequest> {
 
 	public void encode(AuthenticateRequest request, ByteBuf buffer) {
-		BufferUtils.writeString16(request.getUsername(), buffer);
-		BufferUtils.writeString16(request.getPassword(), buffer);
+		BufferUtils.writeString(buffer, request.getUsername());
+		BufferUtils.writeString(buffer, request.getPassword());
 	}
 
 	public int getId() {

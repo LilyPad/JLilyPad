@@ -11,7 +11,7 @@ public class GetDetailsResultDecoder implements ResultDecoder<GetDetailsResult> 
 
 	public GetDetailsResult decode(StatusCode statusCode, ByteBuf buffer) {
 		if(statusCode == StatusCode.SUCCESS) {
-			return new GetDetailsResult(BufferUtils.readString16(buffer), buffer.readUnsignedShort(), BufferUtils.readString16(buffer), BufferUtils.readString16(buffer));
+			return new GetDetailsResult(BufferUtils.readString(buffer), buffer.readUnsignedShort(), BufferUtils.readString(buffer), BufferUtils.readString(buffer));
 		} else {
 			return new GetDetailsResult(statusCode);
 		}

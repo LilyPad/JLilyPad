@@ -11,9 +11,9 @@ public class MessageRequestEncoder implements RequestEncoder<MessageRequest> {
 	public void encode(MessageRequest request, ByteBuf buffer) {
 		buffer.writeShort(request.getRecipients().size());
 		for(String username : request.getRecipients()) {
-			BufferUtils.writeString16(username, buffer);
+			BufferUtils.writeString(buffer, username);
 		}
-		BufferUtils.writeString16(request.getChannel(), buffer);
+		BufferUtils.writeString(buffer, request.getChannel());
 		buffer.writeShort(request.getMessage().length);
 		buffer.writeBytes(request.getMessage());
 	}
