@@ -1,0 +1,32 @@
+# Eclipse
+/.classpath
+/.project
+/.settings
+
+# Netbeans
+/nbproject
+
+# Maven
+/build.xml
+/target
+
+# vim
+.*.sw[a-p]
+
+# Build
+/build
+/bin
+/dist
+/manifest.mf
+
+# Mac OS X
+/.DS_Store
+
+# Intellij
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Temp
+*~
