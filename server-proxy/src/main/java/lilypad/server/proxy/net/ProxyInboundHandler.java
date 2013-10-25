@@ -147,6 +147,10 @@ public class ProxyInboundHandler extends SimpleChannelInboundHandler<Packet> {
 				response.put("version", version);
 				response.put("players", players);
 				response.put("description", description);
+				String favicon = this.config.proxy_getPlayerFavicon();
+				if(favicon != null && favicon.length() != 0) {
+					response.put("favicon", favicon);
+				}
 				proxySession.getInboundChannel().writeAndFlush(new StatusResponsePacket(GsonUtils.gson().toJson(response)));
 				proxySession.setState(ProxyState.STATUS_PING);
 			} else {
