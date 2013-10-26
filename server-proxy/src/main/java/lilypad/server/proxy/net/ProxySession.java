@@ -334,18 +334,18 @@ public class ProxySession {
 		}
 		StateCodecProvider stateCodecProvider = this.inboundChannel.attr(StatefulPacketCodecProviderPair.attributeKey).get().getState();
 		if(stateCodecProvider == PlayStateCodecProvider.instance) {
-			this.inboundChannel.writeAndFlush(new PlayDisconnectPacket(GsonUtils.gson().toJson(reason)));
+			this.inboundChannel.writeAndFlush(new PlayDisconnectPacket("{\"text\": " + GsonUtils.gson().toJson(reason) + "}"));
 		} else if(stateCodecProvider == LoginStateCodecProvider.instance) {
-			this.inboundChannel.writeAndFlush(new LoginDisconnectPacket(GsonUtils.gson().toJson(reason)));
+			this.inboundChannel.writeAndFlush(new LoginDisconnectPacket("{\"text\": " + GsonUtils.gson().toJson(reason) + "}"));
 		}
 		this.inboundChannel.close();
 	}
 
-	public void disconnectIfInitializing(String message) {
+	public void disconnectIfInitializing(String reason) {
 		if(this.state != ProxyState.INIT) {
 			return;
 		}
-		this.disconnect(message);
+		this.disconnect(reason);
 	}
 
 	public Channel getInboundChannel() {
