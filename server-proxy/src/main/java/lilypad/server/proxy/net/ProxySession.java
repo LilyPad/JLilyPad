@@ -289,9 +289,6 @@ public class ProxySession {
 				this.teams.remove(teamPacket.getName());
 			}
 			break;
-		case PlayDisconnectPacket.opcode:
-			this.disconnect(((PlayDisconnectPacket) packet).getReason());
-			return;
 		default:
 			if(packet instanceof GenericPacket) {
 				((GenericPacket) packet).swapEntityId(this.clientEntityId, this.serverEntityId);
