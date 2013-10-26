@@ -34,7 +34,22 @@ public class PlayTeamPacketCodec extends PacketCodec<PlayTeamPacket> {
 	}
 
 	public void encode(PlayTeamPacket packet, ByteBuf buffer) {
-		
+		BufferUtils.writeString(buffer, packet.getName());
+		int mode = packet.getMode();
+		buffer.writeByte(mode);
+		if(mode == 0 || mode == 2) {
+			BufferUtils.writeString(buffer, packet.getDisplayName());
+			BufferUtils.writeString(buffer, packet.getPrefix());
+			BufferUtils.writeString(buffer, packet.getSuffix());
+			buffer.writeByte(packet.getFriendlyFire());
+		}
+		if(mode == 0 || mode == 3 || mode == 4) {
+			String[] players = packet.getPlayers();
+			buffer.writeShort(players.length);
+			for(String player : players) {
+				BufferUtils.writeString(buffer, player);
+			}
+		}
 	}
 
 }
