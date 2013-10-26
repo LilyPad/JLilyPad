@@ -10,7 +10,7 @@ public class AsServerRequestEncoder implements RequestEncoder<AsServerRequest> {
 
 	public void encode(AsServerRequest request, ByteBuf buffer) {
 		if(request.getIp() == null) {
-			buffer.writeShort(0);
+			BufferUtils.writeVarInt(buffer, 0);
 		} else {
 			BufferUtils.writeString(buffer, request.getIp());
 		}

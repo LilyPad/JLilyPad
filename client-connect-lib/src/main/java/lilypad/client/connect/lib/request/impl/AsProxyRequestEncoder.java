@@ -9,10 +9,10 @@ import lilypad.packet.connect.ConnectPacketConstants;
 public class AsProxyRequestEncoder implements RequestEncoder<AsProxyRequest> {
 
 	public void encode(AsProxyRequest request, ByteBuf buffer) {
-		if(request.getIp() != null) {
-			BufferUtils.writeString(buffer, request.getIp());
+		if(request.getIp() == null) {
+			BufferUtils.writeVarInt(buffer, 0);
 		} else {
-			buffer.writeShort(0);
+			BufferUtils.writeString(buffer, request.getIp());
 		}
 		buffer.writeShort(request.getPort());
 		BufferUtils.writeString(buffer, request.getMotd());
