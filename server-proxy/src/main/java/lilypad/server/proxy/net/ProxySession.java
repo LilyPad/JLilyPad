@@ -215,9 +215,6 @@ public class ProxySession {
 		if(this.redirecting) {
 			return;
 		}
-		if(packet instanceof GenericPacket) {
-			((GenericPacket) packet).swapEntityId(this.clientEntityId, this.serverEntityId);
-		}
 		this.outboundChannel.writeAndFlush(packet);
 	}
 
