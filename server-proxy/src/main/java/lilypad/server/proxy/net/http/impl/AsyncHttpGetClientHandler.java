@@ -23,6 +23,14 @@ public class AsyncHttpGetClientHandler extends SimpleChannelInboundHandler<HttpO
 		if (httpObject instanceof HttpResponse) {
 			HttpResponse httpResponse = (HttpResponse) httpObject;
 			int statusCode = httpResponse.getStatus().code();
+			if(statusCode == 204) {
+				try {
+					this.httpGetClient.dispatchHttpResponse("");
+				} finally {
+					context.close();
+				}
+				return;
+			}
 			if(statusCode != 200) {
 				throw new IllegalStateException("Unexpected status code: " + statusCode);
 			}
