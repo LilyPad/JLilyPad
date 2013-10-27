@@ -27,6 +27,7 @@ import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.DecoderException;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.util.AttributeKey;
 
@@ -176,11 +177,13 @@ public class ProxyInboundHandler extends SimpleChannelInboundHandler<Packet> {
 	@Override
 	public void exceptionCaught(ChannelHandlerContext context, Throwable cause) throws Exception {
 		Channel channel = context.channel();
-		if(cause instanceof IOException) {
-			if(!cause.getMessage().equals("Connection reset by peer")) {
-				cause.printStackTrace();
-			}
-		} else if (!(cause instanceof ReadTimeoutException)) {
+		if(cause instanceof IOException && cause.getMessage().equals("Connection reset by peer")) {
+			// ignore
+		} else if(cause instanceof ReadTimeoutException) {
+			// ignore
+		} else if(cause instanceof DecoderException) {
+			// ignore
+		} else {
 			cause.printStackTrace();
 		}
 		if(channel.isOpen()) {
