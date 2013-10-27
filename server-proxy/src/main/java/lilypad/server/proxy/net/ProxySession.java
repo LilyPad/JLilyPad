@@ -286,6 +286,9 @@ public class ProxySession {
 				this.teams.remove(teamPacket.getName());
 			}
 			break;
+		case PlayDisconnectPacket.opcode:
+			this.disconnect(packet);
+			return;
 		default:
 			if(packet instanceof GenericPacket) {
 				((GenericPacket) packet).swapEntityId(this.clientEntityId, this.serverEntityId);
@@ -328,10 +331,17 @@ public class ProxySession {
 		}
 		StateCodecProvider stateCodecProvider = this.inboundChannel.attr(StatefulPacketCodecProviderPair.attributeKey).get().getState();
 		if(stateCodecProvider == PlayStateCodecProvider.instance) {
-			this.inboundChannel.writeAndFlush(new PlayDisconnectPacket("{\"text\": " + GsonUtils.gson().toJson(reason) + "}"));
+			this.disconnect(new PlayDisconnectPacket("{\"text\": " + GsonUtils.gson().toJson(reason) + "}"));
 		} else if(stateCodecProvider == LoginStateCodecProvider.instance) {
-			this.inboundChannel.writeAndFlush(new LoginDisconnectPacket("{\"text\": " + GsonUtils.gson().toJson(reason) + "}"));
+			this.disconnect(new LoginDisconnectPacket("{\"text\": " + GsonUtils.gson().toJson(reason) + "}"));
 		}
+	}
+	
+	public void disconnect(Packet packet) {
+		if(!this.isInboundConnected()) {
+			return;
+		}
+		this.inboundChannel.writeAndFlush(packet);
 		this.inboundChannel.close();
 	}
 
