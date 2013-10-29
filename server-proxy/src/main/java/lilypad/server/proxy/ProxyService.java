@@ -1,6 +1,7 @@
 package lilypad.server.proxy;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -46,6 +47,7 @@ public class ProxyService extends Service<ProxyConfig> implements IPlayable {
 					public void initChannel(SocketChannel channel) throws Exception {
 						StatefulPacketCodecProviderPair packetCodecProvider = new StatefulPacketCodecProviderPair(HandshakeStateCodecProvider.instance);
 						channel.attr(StatefulPacketCodecProviderPair.attributeKey).set(packetCodecProvider);
+						channel.config().setAllocator(PooledByteBufAllocator.DEFAULT);
 						channel.pipeline().addLast(new ReadTimeoutHandler(30));
 						channel.pipeline().addLast(new LegacyPingDecoder(ProxyService.this.config, proxySessionMapper));
 						channel.pipeline().addLast(new VarIntFrameCodec());

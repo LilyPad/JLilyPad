@@ -1,6 +1,7 @@
 package lilypad.server.query.tcp;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -30,6 +31,7 @@ public class QueryTcpService extends Service<QueryTcpConfig> {
 				.localAddress(config.querytcp_getBindAddress())
 				.childHandler(new ChannelInitializer<SocketChannel>() {
 					public void initChannel(SocketChannel channel) throws Exception {
+						channel.config().setAllocator(PooledByteBufAllocator.DEFAULT);
 						channel.pipeline().addLast(new ReadTimeoutHandler(10));
 						channel.pipeline().addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
 						channel.pipeline().addLast(stringEncoder);

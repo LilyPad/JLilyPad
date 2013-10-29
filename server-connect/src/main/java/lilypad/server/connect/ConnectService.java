@@ -1,6 +1,7 @@
 package lilypad.server.connect;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -40,6 +41,7 @@ public class ConnectService extends Service<ConnectConfig> implements IServerSou
 				.localAddress(config.connect_getBindAddress())
 				.childHandler(new ChannelInitializer<SocketChannel>() {
 					public void initChannel(SocketChannel channel) throws Exception {
+						channel.config().setAllocator(PooledByteBufAllocator.DEFAULT);
 						channel.pipeline().addLast(new ReadTimeoutHandler(10));
 						channel.pipeline().addLast(new VarIntFrameCodec());
 						channel.pipeline().addLast(new PacketEncoder(ConnectPacketCodecRegistry.instance));
