@@ -2,7 +2,6 @@ package lilypad.client.connect.lib;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -149,7 +148,7 @@ public class ConnectImpl implements Connect {
 		if(requestEncoder == null) {
 			throw new RequestException("Unknown request");
 		}
-		ByteBuf payload = Unpooled.buffer();
+		ByteBuf payload = this.channel.alloc().buffer();
 		requestEncoder.encode(request, payload);
 		this.channel.writeAndFlush(new RequestPacket(futureId, requestEncoder.getId(), payload));
 		this.pendingFutures.put(futureId, futureResult);

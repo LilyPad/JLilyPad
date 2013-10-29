@@ -9,7 +9,6 @@ import java.util.Set;
 
 import lilypad.server.common.IPlayable;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
@@ -41,7 +40,7 @@ public class QueryUdpHandler extends SimpleChannelInboundHandler<DatagramPacket>
 			if(!this.verifyIdentification(packet.sender(), requestId, buffer.readInt())) {
 				return;
 			}
-			response = Unpooled.buffer();
+			response = context.alloc().buffer();
 			Set<String> players = this.playable.getPlayers();
 			if(buffer.isReadable()) {
 				response.writeByte(0x00);
@@ -93,7 +92,7 @@ public class QueryUdpHandler extends SimpleChannelInboundHandler<DatagramPacket>
 		case 9:
 			QueryUdpIdentification identification = new QueryUdpIdentification(requestId);
 			this.addressToIdentification.put(packet.sender(), identification);
-			response = Unpooled.buffer();
+			response = context.alloc().buffer();
 			response.writeByte(0x09);
 			response.writeInt(identification.getRequestId());
 			response.writeBytes(Integer.toString(identification.getChallenge()).getBytes()); response.writeByte(0x00);

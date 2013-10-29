@@ -95,7 +95,7 @@ public class NodeSession implements IServer {
 	}
 
 	public void handleRequest(RequestPacket requestPacket) {
-		this.write(NodeQueryLookupService.instance.getById(requestPacket.getOperation()).execute(this, requestPacket.getId(), requestPacket.getPayload()));
+		this.write(NodeQueryLookupService.instance.getById(requestPacket.getOperation()).execute(this, requestPacket.getId(), requestPacket.getPayload(), this.channel.alloc()));
 	}
 
 	public void write(Packet packet) {
@@ -198,7 +198,7 @@ public class NodeSession implements IServer {
 		return this.authenticationKey != null;
 	}
 
-	public String generateAuthenticationKey() {
+	public String genAuthenticationKey() {
 		return this.authenticationKey = SecurityUtils.randomHash();
 	} 
 

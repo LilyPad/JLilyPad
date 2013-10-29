@@ -9,7 +9,6 @@ import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 
@@ -34,7 +33,7 @@ public class AesCodec extends ByteToMessageCodec<ByteBuf> {
 	}
 
 	protected void decode(ChannelHandlerContext context, ByteBuf in, List<Object> out) {
-		ByteBuf buffer = Unpooled.buffer(this.aesCipherDecoder.getOutputSize(in.readableBytes()));
+		ByteBuf buffer = context.alloc().buffer(this.aesCipherDecoder.getOutputSize(in.readableBytes()));
 		int read;
 		while(in.isReadable()) {
 			if(in.readableBytes() > bufferSize) {

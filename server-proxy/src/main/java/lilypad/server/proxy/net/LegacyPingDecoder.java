@@ -7,7 +7,6 @@ import lilypad.server.common.IPlayerCallback;
 import lilypad.server.proxy.ProxyConfig;
 import lilypad.server.proxy.packet.MinecraftPacketConstants;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
@@ -45,7 +44,7 @@ public class LegacyPingDecoder extends ByteToMessageDecoder {
 			playerCount = this.sessionMapper.getAuthenticatedSize();
 			playerMaximum = this.config.proxy_getPlayerMaximum();
 		}
-		ByteBuf buffer = Unpooled.buffer();
+		ByteBuf buffer = context.alloc().buffer();
 		buffer.writeByte(0xFF);
 		char[] chars = (MinecraftPacketConstants.magic + "1\0"
 				+ MinecraftPacketConstants.protocolVersion + '\0'

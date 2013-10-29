@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import lilypad.packet.common.util.BufferUtils;
 import lilypad.packet.connect.ConnectPacketConstants;
 import lilypad.packet.connect.impl.MessagePacket;
@@ -14,16 +15,16 @@ import lilypad.server.connect.query.Query;
 
 public class MessageQuery implements Query<NodeSession> {
 
-	public ResultPacket execute(NodeSession sender, int id, ByteBuf payload) {
+	public ResultPacket execute(NodeSession sender, int id, ByteBuf in, ByteBufAllocator alloc) {
 		if(!sender.isAuthenticated()) {
 			return new ResultPacket(id, ConnectPacketConstants.statusInvalidRole);
 		}
-		int recipientsCount = payload.readUnsignedShort();
+		int recipientsCount = in.readUnsignedShort();
 		Set<String> recipients = new HashSet<String>();
 		while(recipientsCount-- != 0) {
-			recipients.add(BufferUtils.readString(payload));
+			recipients.add(BufferUtils.readString(in));
 		}
-		MessagePacket message = new MessagePacket(sender.getIdentification(), BufferUtils.readString(payload), payload.readBytes(payload.readUnsignedShort()));
+		MessagePacket message = new MessagePacket(sender.getIdentification(), BufferUtils.readString(in), in.readBytes(in.readUnsignedShort()));
 		boolean messageSent = false;
 		if(recipients.isEmpty()) {
 			messageSent = true;

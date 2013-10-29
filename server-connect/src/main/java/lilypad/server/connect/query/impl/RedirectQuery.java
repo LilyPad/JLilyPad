@@ -1,6 +1,7 @@
 package lilypad.server.connect.query.impl;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import lilypad.packet.common.util.BufferUtils;
 import lilypad.packet.connect.ConnectPacketConstants;
 import lilypad.packet.connect.impl.ResultPacket;
@@ -9,12 +10,12 @@ import lilypad.server.connect.query.Query;
 
 public class RedirectQuery implements Query<NodeSession> {
 
-	public ResultPacket execute(NodeSession sender, int id, ByteBuf payload) {
+	public ResultPacket execute(NodeSession sender, int id, ByteBuf in, ByteBufAllocator alloc) {
 		if(!sender.isAuthenticated()) {
 			return new ResultPacket(id, ConnectPacketConstants.statusInvalidRole);
 		}
-		String serverName = BufferUtils.readString(payload);
-		String playerName = BufferUtils.readString(payload);
+		String serverName = BufferUtils.readString(in);
+		String playerName = BufferUtils.readString(in);
 		NodeSession server = sender.getConnectService().getSessionMapper().getServerByUsername(serverName);
 		if(server == null) {
 			return new ResultPacket(id, ConnectPacketConstants.statusInvalidGeneric);
