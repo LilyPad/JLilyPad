@@ -19,6 +19,7 @@ public class RequestPacketCodec extends PacketCodec<RequestPacket> {
 		ByteBuf payload = packet.getPayload();
 		buffer.writeShort(payload.readableBytes());
 		buffer.writeBytes(payload, payload.readerIndex(), payload.readableBytes());
+		packet.getPayload().release();
 	}
 
 }

@@ -27,6 +27,7 @@ public class ResultPacketCodec extends PacketCodec<ResultPacket> {
 		if(payload != null) {
 			buffer.writeShort(payload.readableBytes());
 			buffer.writeBytes(payload, payload.readerIndex(), payload.readableBytes());
+			packet.getPayload().release();
 		} else if(packet.getStatusCode() == ConnectPacketConstants.statusSuccess) {
 			buffer.writeShort(0);
 		}

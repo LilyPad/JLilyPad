@@ -15,6 +15,7 @@ public class GenericPacketCodec extends PacketCodec<GenericPacket> {
 
 	public void encode(GenericPacket packet, ByteBuf buffer) {
 		buffer.writeBytes(packet.getBuffer());
+		packet.getBuffer().release();
 	}
 
 }
