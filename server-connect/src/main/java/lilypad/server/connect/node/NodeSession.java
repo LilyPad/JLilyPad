@@ -96,6 +96,7 @@ public class NodeSession implements IServer {
 
 	public void handleRequest(RequestPacket requestPacket) {
 		this.write(NodeQueryLookupService.instance.getById(requestPacket.getOperation()).execute(this, requestPacket.getId(), requestPacket.getPayload(), this.channel.alloc()));
+		requestPacket.getPayload().release();
 	}
 
 	public void write(Packet packet) {

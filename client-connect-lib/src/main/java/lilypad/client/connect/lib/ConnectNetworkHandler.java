@@ -51,10 +51,12 @@ public class ConnectNetworkHandler extends SimpleChannelInboundHandler<Packet> {
 				break;
 			}
 			this.connect.dispatchResult(resultPacket.getId(), statusCode, resultPacket.getPayload());
+			resultPacket.getPayload().release();
 			break;
 		case 0x03:
 			MessagePacket messagePacket = (MessagePacket) packet;
 			MessageEvent messageEvent = new MessageEvent(messagePacket.getSender(), messagePacket.getChannel(), messagePacket.getPayload().array());
+			messagePacket.getPayload().release();
 			this.connect.dispatchMessageEvent(new lilypad.client.connect.api.MessageEvent(messageEvent));
 			this.connect.dispatchEvent(messageEvent);
 			break;
