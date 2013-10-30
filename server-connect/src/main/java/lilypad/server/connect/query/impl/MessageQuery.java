@@ -24,12 +24,14 @@ public class MessageQuery implements Query<NodeSession> {
 		while(recipientsCount-- != 0) {
 			recipients.add(BufferUtils.readString(in));
 		}
-		MessagePacket message = new MessagePacket(sender.getIdentification(), BufferUtils.readString(in), in.readBytes(in.readUnsignedShort()));
+		String senderId = sender.getIdentification();
+		String channel = BufferUtils.readString(in);
+		ByteBuf payload = in.readBytes(in.readUnsignedShort());
 		boolean messageSent = false;
 		if(recipients.isEmpty()) {
 			messageSent = true;
 			for(NodeSession otherSession : sender.getConnectService().getSessionMapper().getAuthenticated()) {
-				otherSession.write(message);
+				otherSession.write(new MessagePacket(senderId, channel, payload.copy()));
 			}
 		} else {
 			NodeSession otherSession;
@@ -39,7 +41,7 @@ public class MessageQuery implements Query<NodeSession> {
 				if(otherSession == null) {
 					continue;
 				}
-				otherSession.write(message);
+				otherSession.write(new MessagePacket(senderId, channel, payload.copy()));
 				messageSent = true;
 			}
 		}
