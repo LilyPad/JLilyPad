@@ -12,6 +12,7 @@ import lilypad.server.proxy.packet.MinecraftPacketConstants;
 import lilypad.server.proxy.packet.StatefulPacketCodecProviderPair;
 import lilypad.packet.common.Packet;
 import lilypad.server.proxy.packet.impl.HandshakePacket;
+import lilypad.server.proxy.packet.impl.LoginDisconnectPacket;
 import lilypad.server.proxy.packet.impl.LoginStartPacket;
 import lilypad.server.proxy.packet.impl.LoginSuccessPacket;
 import lilypad.server.proxy.packet.impl.PlayDisconnectPacket;
@@ -74,6 +75,9 @@ public class ProxyOutboundHandler extends SimpleChannelInboundHandler<Packet> {
 				this.state = ProxyState.INIT;
 				this.proxySession.setRedirecting(true);
 				context.channel().attr(StatefulPacketCodecProviderPair.attributeKey).get().setState(PlayStateCodecProvider.instance);
+			} else if(packet.getOpcode() == LoginDisconnectPacket.opcode) {
+				this.proxySession.disconnect(new PlayDisconnectPacket((((LoginDisconnectPacket) packet)).getJson()));
+				channel.close();
 			} else {
 				this.proxySession.disconnectIfInitializing("Error: Protocol Mismatch");
 				channel.close();

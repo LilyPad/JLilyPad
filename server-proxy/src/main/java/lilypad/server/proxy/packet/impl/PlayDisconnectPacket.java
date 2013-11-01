@@ -6,15 +6,15 @@ public class PlayDisconnectPacket extends Packet {
 
 	public static final int opcode = 0x40;
 	
-	private String reason;
+	private String json;
 	
-	public PlayDisconnectPacket(String reason) {
+	public PlayDisconnectPacket(String json) {
 		super(opcode);
-		this.reason = reason;
+		this.json = json;
 	}
 	
-	public String getReason() {
-		return this.reason;
+	public String getJson() {
+		return this.json;
 	}
 	
 }

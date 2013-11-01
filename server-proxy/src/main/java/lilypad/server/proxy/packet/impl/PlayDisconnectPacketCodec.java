@@ -15,7 +15,7 @@ public class PlayDisconnectPacketCodec extends PacketCodec<PlayDisconnectPacket>
 	}
 
 	public void encode(PlayDisconnectPacket packet, ByteBuf buffer) {
-		BufferUtils.writeString(buffer, packet.getReason());
+		BufferUtils.writeString(buffer, packet.getJson());
 	}
 
 }
