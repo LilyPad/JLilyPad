@@ -340,6 +340,9 @@ public class ConnectImpl implements Connect {
 			return; // encoder without decoder? fail safe anyway
 		}
 		futureResult.notifyResult((T) resultDecoder.decode(statusCode, buffer));
+		if(buffer != null) {
+			buffer.release();
+		}
 	}
 
 	public boolean isConnected() {

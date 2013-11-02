@@ -51,7 +51,6 @@ public class ConnectNetworkHandler extends SimpleChannelInboundHandler<Packet> {
 				break;
 			}
 			this.connect.dispatchResult(resultPacket.getId(), statusCode, resultPacket.getPayload());
-			resultPacket.getPayload().release();
 			break;
 		case 0x03:
 			MessagePacket messagePacket = (MessagePacket) packet;
