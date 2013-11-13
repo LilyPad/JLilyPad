@@ -28,7 +28,7 @@ public class SecurityUtils {
 			for(byte[] bytes : bytesArray) {
 				messageDigest.update(bytes);
 			}
-			return new BigInteger(messageDigest.digest()).toString(16);
+			return new BigInteger(1, messageDigest.digest()).toString(16);
 		} catch(Exception exception) {
 			exception.printStackTrace();
 			return null;
