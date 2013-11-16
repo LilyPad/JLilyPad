@@ -83,7 +83,7 @@ public class ProxySession {
 	public void inboundAuthenticate() {
 		URI uri;
 		try {
-			uri = MinecraftUtils.getSessionURI(this.username, SecurityUtils.shaHex(this.getServerKey().getBytes("ISO_8859_1"), this.sharedSecret, this.config.proxy_getKeyPair().getPublic().getEncoded()), true);
+			uri = MinecraftUtils.getSessionURI(this.username, SecurityUtils.mojangShaHex(this.getServerKey().getBytes("ISO_8859_1"), this.sharedSecret, this.config.proxy_getKeyPair().getPublic().getEncoded()), true);
 		} catch(UnsupportedEncodingException exception) {
 			exception.printStackTrace();
 			return;
