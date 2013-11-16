@@ -6,6 +6,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.CharsetUtil;
 
@@ -23,7 +24,7 @@ public class AsyncHttpGetClientHandler extends SimpleChannelInboundHandler<HttpO
 		if (httpObject instanceof HttpResponse) {
 			HttpResponse httpResponse = (HttpResponse) httpObject;
 			int statusCode = httpResponse.getStatus().code();
-			if(statusCode == 204) {
+			if(statusCode == HttpResponseStatus.NO_CONTENT.code()) {
 				try {
 					this.httpGetClient.dispatchHttpResponse("");
 				} finally {
@@ -31,7 +32,7 @@ public class AsyncHttpGetClientHandler extends SimpleChannelInboundHandler<HttpO
 				}
 				return;
 			}
-			if(statusCode != 200) {
+			if(statusCode != HttpResponseStatus.OK.code()) {
 				throw new IllegalStateException("Unexpected status code: " + statusCode);
 			}
 		} else if(httpObject instanceof HttpContent) {

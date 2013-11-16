@@ -88,17 +88,19 @@ public class ProxySession {
 			exception.printStackTrace();
 			return;
 		}
-		this.authHttpGetClient = new AsyncHttpGetClient(uri, this.inboundChannel.eventLoop());
+		this.authHttpGetClient = new AsyncHttpGetClient(uri, this.inboundChannel.eventLoop(), this.inboundChannel.alloc());
 		this.authHttpGetClient.registerListener(new HttpGetClientListener() {
 			@SuppressWarnings("unchecked")
 			public void httpResponse(HttpGetClient httpClient, String response) {
 				Map<String, String> jsonResponse;
 				jsonResponse = GsonUtils.gson().fromJson(response, HashMap.class);
 				if(jsonResponse == null) {
+					System.out.println("[LilyPad] error: Authentication to Minecraft.net Failed (0x01)");
 					inboundAuthenticate(false);
 					return;
 				}
 				if(!jsonResponse.containsKey("id")) {
+					System.out.println("[LilyPad] error: Authentication to Minecraft.net Failed (0x02)");
 					inboundAuthenticate(false);
 					return;
 				}
@@ -308,6 +310,7 @@ public class ProxySession {
 			public void initChannel(SocketChannel channel) throws Exception {
 				StatefulPacketCodecProviderPair packetCodecProvider = new StatefulPacketCodecProviderPair(HandshakeStateCodecProvider.instance);
 				channel.attr(StatefulPacketCodecProviderPair.attributeKey).set(packetCodecProvider);
+				channel.config().setAllocator(ProxySession.this.inboundChannel.alloc());
 				channel.pipeline().addLast(new ReadTimeoutHandler(30));
 				channel.pipeline().addLast(new VarIntFrameCodec());
 				channel.pipeline().addLast(new PacketEncoder(packetCodecProvider.getServerBound()));

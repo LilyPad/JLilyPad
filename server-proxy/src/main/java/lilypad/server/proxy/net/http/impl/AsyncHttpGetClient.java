@@ -1,6 +1,7 @@
 package lilypad.server.proxy.net.http.impl;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -30,17 +31,18 @@ import lilypad.server.proxy.net.http.HttpGetClientListener;
 
 public class AsyncHttpGetClient implements HttpGetClient {
 
-	private static final long timeout = 5000L;
+	private static final long timeout = 10000L;
 
 	private String host;
 	private int port;
 	private boolean ssl;
 	private String path;
 	private EventLoop eventLoop;
+	private ByteBufAllocator allocator;
 	private List<HttpGetClientListener> listeners = new ArrayList<HttpGetClientListener>();
 	private Channel channel;
 
-	public AsyncHttpGetClient(URI uri, EventLoop eventLoop) {
+	public AsyncHttpGetClient(URI uri, EventLoop eventLoop, ByteBufAllocator allocator) {
 		String scheme = uri.getScheme();
 		if(scheme == null) {
 			scheme = "http";
@@ -60,6 +62,7 @@ public class AsyncHttpGetClient implements HttpGetClient {
 		}
 		this.path = uri.getRawPath() + (uri.getRawQuery() == null ? "" : "?" + uri.getRawQuery());
 		this.eventLoop = eventLoop;
+		this.allocator = allocator;
 	}
 
 	public void run() {
@@ -69,6 +72,7 @@ public class AsyncHttpGetClient implements HttpGetClient {
 		.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) timeout)
 		.handler(new ChannelInitializer<SocketChannel>() {
 			public void initChannel(SocketChannel channel) throws Exception {
+				channel.config().setAllocator(AsyncHttpGetClient.this.allocator);
 				channel.pipeline().addLast(new ReadTimeoutHandler(timeout, TimeUnit.MILLISECONDS));
 				if(AsyncHttpGetClient.this.ssl) {
 					SSLEngine engine = DummyTrustManager.getDummySSLContext().createSSLEngine();
