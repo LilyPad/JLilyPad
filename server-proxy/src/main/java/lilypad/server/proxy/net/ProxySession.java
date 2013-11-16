@@ -95,12 +95,10 @@ public class ProxySession {
 				Map<String, String> jsonResponse;
 				jsonResponse = GsonUtils.gson().fromJson(response, HashMap.class);
 				if(jsonResponse == null) {
-					System.out.println("[LilyPad] error: Authentication to Minecraft.net Failed (0x01)");
 					inboundAuthenticate(false);
 					return;
 				}
 				if(!jsonResponse.containsKey("id")) {
-					System.out.println("[LilyPad] error: Authentication to Minecraft.net Failed (0x02)");
 					inboundAuthenticate(false);
 					return;
 				}
