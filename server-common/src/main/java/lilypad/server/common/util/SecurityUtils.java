@@ -5,7 +5,7 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 
 public class SecurityUtils {
-
+	
 	private static final SecureRandom secureRandom = new SecureRandom();
 	
 	public static String randomHash() {
@@ -42,7 +42,11 @@ public class SecurityUtils {
 			for(byte[] bytes : bytesArray) {
 				messageDigest.update(bytes);
 			}
-			return new BigInteger(1, messageDigest.digest()).toString(16);
+			String hash = new BigInteger(1, messageDigest.digest()).toString(16);
+			if(hash.length() == 39) {
+				hash = "0" + hash;
+			}
+			return hash;
 		} catch(Exception exception) {
 			exception.printStackTrace();
 			return null;
