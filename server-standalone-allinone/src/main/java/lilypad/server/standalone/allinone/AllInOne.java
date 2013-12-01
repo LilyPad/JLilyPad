@@ -45,10 +45,8 @@ public class AllInOne {
 			try {
 				String scannerLine;
 				while((scannerLine = scanner.next()) != null) {
-					if(scannerLine.equalsIgnoreCase("stop") || scannerLine.equalsIgnoreCase("halt")) {
+					if(scannerLine.equals("stop") || scannerLine.equals("halt")) {
 						break;
-					} else {
-						System.out.println("Command not recognized.");
 					}
 				}
 			} finally {

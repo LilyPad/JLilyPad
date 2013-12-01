@@ -46,7 +46,7 @@ public class Query {
 			try {
 				String scannerLine;
 				while((scannerLine = scanner.next()) != null) {
-					if(scannerLine.equals("halt")) {
+					if(scannerLine.equals("halt") || scannerLine.equals("stop")) {
 						break;
 					}
 				}
