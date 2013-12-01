@@ -298,7 +298,10 @@ public class ProxySession {
 		this.inboundChannel.writeAndFlush(packet);
 	}
 
-	public void redirect(final IServer server) { 
+	public void redirect(final IServer server) {
+		if(this.server == server) {
+			return;
+		}
 		new Bootstrap().group(this.inboundChannel.eventLoop())
 		.channel(NioSocketChannel.class)
 		.localAddress(this.config.proxy_getOutboundAddress())
