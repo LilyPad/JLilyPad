@@ -3,6 +3,7 @@ package lilypad.server.proxy.packet.state;
 import lilypad.packet.common.PacketCodecProvider;
 import lilypad.server.proxy.packet.MinecraftPacketCodecRegistry;
 import lilypad.server.proxy.packet.StatefulPacketCodecProviderPair.StateCodecProvider;
+import lilypad.server.proxy.packet.impl.PlayClientSettingsPacketCodec;
 import lilypad.server.proxy.packet.impl.PlayDisconnectPacketCodec;
 import lilypad.server.proxy.packet.impl.PlayJoinGamePacketCodec;
 import lilypad.server.proxy.packet.impl.PlayPlayerListPacketCodec;
@@ -24,6 +25,7 @@ public class PlayStateCodecProvider implements StateCodecProvider {
 		this.clientBound.register(new PlayPlayerListPacketCodec());
 		this.clientBound.register(new PlayScoreObjectivePacketCodec());
 		this.clientBound.register(new PlayTeamPacketCodec());
+		this.serverBound.register(new PlayClientSettingsPacketCodec());
 	}
 	
 	public PacketCodecProvider getClientBound() {

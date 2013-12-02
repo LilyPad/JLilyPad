@@ -24,6 +24,7 @@ import lilypad.server.proxy.packet.StatefulPacketCodecProviderPair;
 import lilypad.server.proxy.packet.StatefulPacketCodecProviderPair.StateCodecProvider;
 import lilypad.server.proxy.packet.impl.LoginDisconnectPacket;
 import lilypad.server.proxy.packet.impl.LoginSuccessPacket;
+import lilypad.server.proxy.packet.impl.PlayClientSettingsPacket;
 import lilypad.server.proxy.packet.impl.PlayDisconnectPacket;
 import lilypad.server.proxy.packet.impl.PlayJoinGamePacket;
 import lilypad.server.proxy.packet.impl.PlayPlayerListPacket;
@@ -70,6 +71,7 @@ public class ProxySession {
 
 	private int clientEntityId;
 	private int serverEntityId;
+	private PlayClientSettingsPacket clientSettingsPacket;
 	private Set<String> playersTabbed = new HashSet<String>();
 	private Set<String> scoreboards = new HashSet<String>();
 	private Set<String> teams = new HashSet<String>();
@@ -212,6 +214,9 @@ public class ProxySession {
 	}
 
 	public void inboundReceived(Packet packet) {
+		if(packet.getOpcode() == PlayClientSettingsPacket.opcode) {
+			this.clientSettingsPacket = (PlayClientSettingsPacket) packet;
+		}
 		if(this.redirecting) {
 			return;
 		}
@@ -236,6 +241,9 @@ public class ProxySession {
 				playJoinGamePacket.setMaxPlayers(60);
 			} else {
 				playJoinGamePacket.setMaxPlayers(0);
+			}
+			if(this.clientSettingsPacket != null) {
+				this.outboundChannel.write(this.clientSettingsPacket);
 			}
 			this.serverEntityId = playJoinGamePacket.getEntityId();
 			if(this.state == ProxyState.INIT) {
