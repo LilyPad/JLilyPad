@@ -243,7 +243,7 @@ public class ProxySession {
 				playJoinGamePacket.setMaxPlayers(0);
 			}
 			if(this.clientSettingsPacket != null) {
-				this.outboundChannel.write(this.clientSettingsPacket);
+				channel.write(this.clientSettingsPacket);
 			}
 			this.serverEntityId = playJoinGamePacket.getEntityId();
 			if(this.state == ProxyState.INIT) {
