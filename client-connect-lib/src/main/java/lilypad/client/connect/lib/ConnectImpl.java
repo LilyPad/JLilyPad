@@ -117,11 +117,11 @@ public class ConnectImpl implements Connect {
 				}
 				this.pendingFutures.clear();
 			}
-			if(this.eventGroup != null) {
-				this.eventGroup.shutdownGracefully();
-			}
 			if(this.channel != null && this.channel.isOpen()) {
 				this.channel.close().sync();
+			}
+			if(this.eventGroup != null) {
+				this.eventGroup.shutdownGracefully().sync();
 			}
 		} catch(Exception exception) {
 			// ignore
