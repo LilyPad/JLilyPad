@@ -60,6 +60,12 @@ public class MessageRequest implements Request<MessageResult> {
 	 * @param message
 	 */
 	public MessageRequest(List<String> recipients, String channel, byte[] message) {
+		if(recipients.size() > 65535) { // TODO abritrary limits, perhaps we should retrieve this from Packet-Connect?
+			throw new IllegalArgumentException("Recipients must be less than an unsigned short in size");
+		}
+		if(message.length > 65535) {
+			throw new IllegalArgumentException("Message must be less than an unsigned short in length");
+		}
 		this.recipients = recipients;
 		this.channel = channel;
 		this.message = message;
