@@ -3,18 +3,11 @@ package lilypad.client.connect.lib;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import lilypad.client.connect.api.event.MessageEvent;
-import lilypad.client.connect.api.event.RedirectEvent;
-import lilypad.client.connect.api.event.ServerAddEvent;
-import lilypad.client.connect.api.event.ServerRemoveEvent;
+import lilypad.client.connect.api.event.*;
 import lilypad.client.connect.api.result.StatusCode;
 import lilypad.packet.common.Packet;
 import lilypad.packet.connect.ConnectPacketConstants;
-import lilypad.packet.connect.impl.MessagePacket;
-import lilypad.packet.connect.impl.RedirectPacket;
-import lilypad.packet.connect.impl.ResultPacket;
-import lilypad.packet.connect.impl.ServerAddPacket;
-import lilypad.packet.connect.impl.ServerPacket;
+import lilypad.packet.connect.impl.*;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -76,6 +69,16 @@ public class ConnectNetworkHandler extends SimpleChannelInboundHandler<Packet> {
 				ServerRemoveEvent serverRemoveEvent = new ServerRemoveEvent(serverPacket.getServer());
 				this.connect.dispatchServerRemoveEvent(serverPacket.getServer());
 				this.connect.dispatchEvent(serverRemoveEvent);
+			}
+			break;
+		case 0x06:
+			PlayerPacket playerPacket = (PlayerPacket) packet;
+			if(playerPacket.isJoining()) {
+				PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(playerPacket.getPlayerName(), playerPacket.getPlayerUUID());
+				this.connect.dispatchEvent(playerJoinEvent);
+			} else {
+				PlayerLeaveEvent playerLeaveEvent = new PlayerLeaveEvent(playerPacket.getPlayerName(), playerPacket.getPlayerUUID());
+				this.connect.dispatchEvent(playerLeaveEvent);
 			}
 			break;
 		default:
