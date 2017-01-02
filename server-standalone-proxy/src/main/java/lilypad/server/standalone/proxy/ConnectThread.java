@@ -13,6 +13,7 @@ import lilypad.server.proxy.packet.MinecraftPacketConstants;
 public class ConnectThread implements Runnable {
 
 	private static final long playersInterval = 5000L;
+	private static final long delayInterval = 1000L;
 	
 	private Connect connect;
 	private ConnectServerSource connectServerSource;
@@ -58,7 +59,7 @@ public class ConnectThread implements Runnable {
 				} catch(Throwable throwable) {
 					this.connect.disconnect();
 					System.out.println("[Connect] Couldn't connect to remote host: \"" + throwable.getMessage() + "\", retrying");
-					Thread.sleep(1000L);
+					Thread.sleep(delayInterval);
 					continue;
 				}
 				
@@ -67,7 +68,7 @@ public class ConnectThread implements Runnable {
 				if(getKeyResult == null) {
 					this.connect.disconnect();
 					System.out.println("[Connect] Connection timed out while keying, retrying");
-					Thread.sleep(1000L);
+					Thread.sleep(delayInterval);
 					continue;
 				}
 				
@@ -76,7 +77,7 @@ public class ConnectThread implements Runnable {
 				if(authenticationResult == null) {
 					this.connect.disconnect();
 					System.out.println("[Connect] Connection timed out while authenticating, retrying");
-					Thread.sleep(1000L);
+					Thread.sleep(delayInterval);
 					continue;
 				}
 				switch(authenticationResult.getStatusCode()) {
@@ -85,12 +86,12 @@ public class ConnectThread implements Runnable {
 				case INVALID_GENERIC:
 					this.connect.disconnect();
 					System.out.println("[Connect] Invalid username or password, retrying");
-					Thread.sleep(1000L);
+					Thread.sleep(delayInterval);
 					continue;
 				default:
 					this.connect.disconnect();
 					System.out.println("[Connect] Unknown error while authenticating: \"" + authenticationResult.getStatusCode() + "\", retrying");
-					Thread.sleep(1000L);
+					Thread.sleep(delayInterval);
 					continue;
 				}
 				
@@ -99,7 +100,7 @@ public class ConnectThread implements Runnable {
 				if(asProxyResult == null) {
 					this.connect.disconnect();
 					System.out.println("[Connect] Connection timed out while acquiring role, retrying");
-					Thread.sleep(1000L);
+					Thread.sleep(delayInterval);
 					continue;
 				}
 				switch(asProxyResult.getStatusCode()) {
@@ -108,12 +109,12 @@ public class ConnectThread implements Runnable {
 				case INVALID_GENERIC:
 					connect.disconnect();
 					System.out.println("[Connect] Invalid username, already in use");
-					Thread.sleep(1000L);
+					Thread.sleep(delayInterval);
 					break;
 				default:
 					connect.disconnect();
 					System.out.println("[Connect] Unknown error while acquiring role: \"" + asProxyResult.getStatusCode() + "\", retrying");
-					Thread.sleep(1000L);
+					Thread.sleep(delayInterval);
 					continue;
 				}
 				
@@ -129,7 +130,7 @@ public class ConnectThread implements Runnable {
 						this.connectPlayerCallback.queryPlayers();
 						lastPlayers = System.currentTimeMillis();
 					}
-					Thread.sleep(1000L);
+					Thread.sleep(delayInterval);
 				}
 				System.out.println("[Connect] Lost connection to the cloud, reconnecting");
 			}
