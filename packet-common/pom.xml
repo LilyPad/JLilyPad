@@ -19,6 +19,10 @@
 			<id>netty</id>
 			<url>http://repository-netty.forge.cloudbees.com/snapshot/</url>
 		</repository>
+		<repository>
+			<id>jboss</id>
+			<url>https://repository.jboss.org/nexus/content/repositories/public/</url>
+		</repository>
 	</repositories>
   
 	<dependencies>
@@ -30,7 +34,7 @@
 		<dependency>
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
-			<version>3.22.0-CR1</version>
+			<version>3.21.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
