@@ -2,7 +2,6 @@ package lilypad.client.connect.lib;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -22,6 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -86,11 +86,22 @@ public class ConnectImpl implements Connect {
 
 	public void connect() throws Throwable {
 		this.disconnect();
-		Bootstrap bootstrap = new Bootstrap().group(this.eventGroup = new NioEventLoopGroup())
+
+		final ThreadGroup eventThreadGroup = Thread.currentThread().getThreadGroup();
+		final AtomicInteger eventThreadId = new AtomicInteger();
+		this.eventGroup = new NioEventLoopGroup(0, new ThreadFactory() {
+			public Thread newThread(Runnable runnable) {
+				Thread thread = new Thread(eventThreadGroup, runnable, "Netty Connect IO #" + eventThreadId.getAndIncrement());
+				thread.setDaemon(false);
+				thread.setPriority(Thread.NORM_PRIORITY);
+				return thread;
+			}
+		});
+
+		Bootstrap bootstrap = new Bootstrap().group(this.eventGroup)
 				.channel(NioSocketChannel.class)
 				.handler(new ChannelInitializer<SocketChannel>() {
 					public void initChannel(SocketChannel channel) throws Exception {
-						channel.config().setAllocator(PooledByteBufAllocator.DEFAULT);
 						channel.pipeline().addLast(new ReadTimeoutHandler(10));
 						channel.pipeline().addLast(new VarIntFrameCodec());
 						channel.pipeline().addLast(new PacketEncoder(ConnectPacketCodecRegistry.instance));
