@@ -9,6 +9,7 @@ import lilypad.client.connect.api.event.ServerAddEvent;
 import lilypad.client.connect.api.event.ServerRemoveEvent;
 import lilypad.client.connect.api.result.StatusCode;
 import lilypad.packet.common.Packet;
+import lilypad.packet.common.util.BufferUtils;
 import lilypad.packet.connect.ConnectPacketConstants;
 import lilypad.packet.connect.impl.MessagePacket;
 import lilypad.packet.connect.impl.RedirectPacket;
@@ -54,7 +55,7 @@ public class ConnectNetworkHandler extends SimpleChannelInboundHandler<Packet> {
 			break;
 		case 0x03:
 			MessagePacket messagePacket = (MessagePacket) packet;
-			MessageEvent messageEvent = new MessageEvent(messagePacket.getSender(), messagePacket.getChannel(), messagePacket.getPayload().array());
+			MessageEvent messageEvent = new MessageEvent(messagePacket.getSender(), messagePacket.getChannel(), BufferUtils.readBytes(messagePacket.getPayload(), messagePacket.getPayload().readableBytes()));
 			messagePacket.getPayload().release();
 			this.connect.dispatchMessageEvent(new lilypad.client.connect.api.MessageEvent(messageEvent));
 			this.connect.dispatchEvent(messageEvent);

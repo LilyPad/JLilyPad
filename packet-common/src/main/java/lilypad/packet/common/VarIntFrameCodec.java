@@ -9,7 +9,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageCodec;
 import io.netty.handler.codec.CorruptedFrameException;
 
-@Sharable
 public class VarIntFrameCodec extends ByteToMessageCodec<ByteBuf> {
 
 	protected void decode(ChannelHandlerContext context, ByteBuf in, List<Object> out) throws Exception {

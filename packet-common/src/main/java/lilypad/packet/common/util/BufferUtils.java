@@ -57,6 +57,12 @@ public class BufferUtils {
 		buffer.writeBytes(bytes);
 	}
 
+	public static byte[] readBytes(ByteBuf from, int length) {
+		byte[] data = new byte[length];
+		from.readBytes(data);
+		return data;
+	}
+
 	public static PublicKey readPublicKey(ByteBuf buffer) {
 		int size = buffer.readUnsignedShort();
 		try {
