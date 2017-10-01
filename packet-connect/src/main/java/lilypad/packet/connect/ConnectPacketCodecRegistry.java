@@ -1,12 +1,7 @@
 package lilypad.packet.connect;
 
 import lilypad.packet.common.PacketCodecRegistry;
-import lilypad.packet.connect.impl.KeepalivePacketCodec;
-import lilypad.packet.connect.impl.MessagePacketCodec;
-import lilypad.packet.connect.impl.RedirectPacketCodec;
-import lilypad.packet.connect.impl.RequestPacketCodec;
-import lilypad.packet.connect.impl.ResultPacketCodec;
-import lilypad.packet.connect.impl.ServerPacketCodec;
+import lilypad.packet.connect.impl.*;
 
 public class ConnectPacketCodecRegistry extends PacketCodecRegistry {
 
@@ -19,6 +14,7 @@ public class ConnectPacketCodecRegistry extends PacketCodecRegistry {
 		this.register(new MessagePacketCodec());
 		this.register(new RedirectPacketCodec());
 		this.register(new ServerPacketCodec());
+		this.register(new PlayerPacketCodec());
 	}
 	
 }
